@@ -782,19 +782,19 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
                 marginBottom: 6,
               }}
             >
-              {r.nama ? (
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>{r.nama}</span>
-              ) : (
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>
+                {r.nama || "Anonim"}{" "}
                 <span
                   style={{
                     fontFamily: "'Courier New', monospace",
-                    fontSize: 11,
+                    fontSize: 12,
+                    fontWeight: 400,
                     color: "#9CA3AF",
                   }}
                 >
-                  Responden #{String(totalResponden - idx).padStart(4, "0")}
+                  #{String(totalResponden - idx).padStart(4, "0")}
                 </span>
-              )}
+              </span>
               <span
                 style={{
                   fontFamily: "'Courier New', monospace",
