@@ -1,6 +1,6 @@
-// Bobot skor 1-5 untuk setiap opsi (index 0-4 = A-E) di setiap pertanyaan q1-q35
+// Bobot skor 1-5 untuk setiap opsi (index 0-4 = A-E) di setiap pertanyaan q1-q40
 // 1 = vibe santai/pasrah/boncos, 5 = vibe produktif/ambis/cuan
-// Dipakai untuk menghitung total skor (35-175) lalu dipetakan ke 30 golongan
+// Dipakai untuk menghitung total skor (40-200) lalu dipetakan ke 30 golongan
 
 export const BOBOT_SKOR = {
   q1: [2, 4, 1, 1, 3],
@@ -37,7 +37,12 @@ export const BOBOT_SKOR = {
   q32: [2, 3, 4, 4, 1],
   q33: [5, 4, 2, 1, 1],
   q34: [1, 2, 4, 5, 1],
-  q35: [3, 2, 1, 4, 1],
+  q35: [2, 4, 2, 3, 3],
+  q36: [5, 3, 2, 1, 4],
+  q37: [5, 3, 2, 1, 2],
+  q38: [3, 3, 2, 1, 2],
+  q39: [4, 3, 2, 1, 5],
+  q40: [3, 4, 1, 5, 2],
 };
 
 // 30 golongan, diurutkan dari skor rendah ke tinggi
@@ -92,9 +97,9 @@ export function hitungSkorTotal(jawaban, bagianData) {
 }
 
 export function tentukanGolongan(skorTotal) {
-  // Skor minimum 35 (semua jawab bobot 1), maksimum 175 (semua jawab bobot 5)
-  const MIN_SKOR = 35;
-  const MAX_SKOR = 175;
+  // Skor minimum 40 (semua jawab bobot 1), maksimum 200 (semua jawab bobot 5)
+  const MIN_SKOR = 40;
+  const MAX_SKOR = 200;
   const rentang = MAX_SKOR - MIN_SKOR;
   const posisi = Math.max(0, Math.min(1, (skorTotal - MIN_SKOR) / rentang));
   const index = Math.min(GOLONGAN.length - 1, Math.floor(posisi * GOLONGAN.length));
