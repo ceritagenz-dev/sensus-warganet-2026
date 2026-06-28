@@ -50,7 +50,12 @@ export const BAGIAN = [
       { id: "q32", label: "Rata-rata total pendapatanmu per bulan?", opsi: ["Di bawah UMR (cukup buat bertahan hidup)", "Setara UMR (cukup buat makan & bayar kos)", "Di atas UMR (bisa nabung sedikit)", 'Sultan" (pendapatan nggak menentu tapi sering hedon)', "Nggak punya pendapatan (masih disubsidi keluarga)"] },
       { id: "q33", label: "Total pengeluaran rata-rata per bulan?", opsi: ["Hemat banget (di bawah 1 juta)", "Normal (1 - 3 juta)", "Hedon (3 - 7 juta)", "High class (di atas 7 juta)", "Nggak pernah ngitung (tahu-tahu saldo nol)"] },
       { id: "q34", label: "Berapa gram emas yang kamu simpan (tabungan)?", opsi: ["Belum punya (lagi nabung buat beli)", "1 - 5 gram (baru mulai investasi)", "5 - 20 gram (sudah mulai aman)", "Di atas 20 gram (investor sejati)", "Emas? Adanya emas-emasan palsu di pasar malam"] },
-      { id: "q35", label: "Sudah follow X @ceritagenz?", opsi: ["Sudah dong, biar update terus!", "Baru aja follow gara-gara sensus ini.", "Belum, otw cari dulu.", "Sudah dari dulu, follower setia!", "Apa itu X? (Masih pakai cara tradisional)"] },
+      { id: "q35", label: "Status hubungan sama mantan?", opsi: ["Masih chat", "Udah blok total", "Diem-diem an", "Jadi temen", "Gak punya mantan"] },
+      { id: "q36", label: "Berapa kali pindah kerja/pindah haluan dalam 2 tahun terakhir?", opsi: ["Belum pernah", "1 kali", "2-3 kali", "Lebih dari 3 kali", "Masih di tempat pertama"] },
+      { id: "q37", label: "Ada utang/pinjol yang belum lunas?", opsi: ["Gak ada, bersih", "Ada tapi kecil", "Ada dan lumayan", "Banyak, jangan tanya", "Lagi nyicil terus"] },
+      { id: "q38", label: "Siapa yang tau detail gaji/income kamu?", opsi: ["Gak ada yang tau", "Pasangan doang", "Keluarga deket", "Semua temen tau", "Sengaja di-flex ke semua orang"] },
+      { id: "q39", label: "Kalau tiba-tiba dapat 10 juta gratis, ngapain duluan?", opsi: ["Ditabung semua", "Bayar utang dulu", "Healing/liburan", "Belanja barang impian", "Dibagi ke keluarga"] },
+      { id: "q40", label: "Sudah follow X @ceritagenz?", opsi: ["Sudah dong, biar update terus!", "Baru aja follow gara-gara sensus ini.", "Belum, otw cari dulu.", "Sudah dari dulu, follower setia!", "Apa itu X? (Masih pakai cara tradisional)"] },
     ],
   },
 ];
