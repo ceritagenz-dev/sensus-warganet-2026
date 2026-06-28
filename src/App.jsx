@@ -1,227 +1,8 @@
 import { useState, useEffect } from "react";
-
-// Data Sensus Warganet 2026 - 35 pertanyaan, 3 bagian
-const BAGIAN = [
-  {
-    judul: "Bagian 1",
-    subjudul: "Kehidupan Sehari-hari",
-    pertanyaan: [
-      { id: "q1", label: "Kegiatan paling produktif pas lagi mager?", opsi: ["Scroll TikTok", "Nontonin video tutorial", "Tiduran mikir masa depan", "Chat mantan (nggak dikirim)", "Membersihkan galeri HP"] },
-      { id: "q2", label: "Strategi kalau lagi boker di tempat umum?", opsi: ["Pasang musik keras", "Tahan napas", "Nunggu sepi banget", "Pasrah (yang penting plong)", "Langsung keluar (nggak pake lama)"] },
-      { id: "q3", label: "Kebiasaan aneh sebelum tidur?", opsi: ["Scroll sosmed sampai mata perih", "Harus ada suara kipas", "Mikirin kesalahan masa lalu", "Cek kunci pintu 3x", "Harus minum air putih"] },
-      { id: "q4", label: "Kamu tim apa kalau makan mie instan?", opsi: ["Kuah banyak", "Nyemek (air dikit)", "Diremes dimakan mentah", "Mewah (pake telur, keju, kornet)", "Mie instan campur nasi"] },
-      { id: "q5", label: "Reaksi pas ada tukang parkir muncul?", opsi: ["Kasih uang pas", "Pura-pura nggak lihat", 'Bilang "nggak ada receh"', "Senyum terpaksa", "Langsung kasih uang 2 ribuan"] },
-      { id: "q6", label: "Apa barang yang paling sering hilang?", opsi: ["Korek api", "Karet rambut", "Bolpen", "Harapan", "Sandal jepit"] },
-      { id: "q7", label: "Kalau menang undian, hal pertama dilakuin?", opsi: ["Flexing di sosmed", "Langsung resign", "Beli barang nggak penting", "Diam-diam aja", "Langsung sedekah"] },
-      { id: "q8", label: 'Definisi "tunggu 5 menit lagi" versi kamu?', opsi: ["1 jam kemudian", "Nunggu mood balik", "Tidur sebentar", "Nunggu diingetin orang", "Nggak bakal berangkat"] },
-      { id: "q9", label: "Kalau lagi bosen, kamu milih:", opsi: ["Stalking mantan", "Belanja online", "Bersihin galeri HP", "Nonton tutorial masak", "Tidur seharian"] },
-      { id: "q10", label: "Seberapa sering kamu ngomong sendiri?", opsi: ["Tiap detik", "Pas di kamar mandi", "Pas lagi marah", "Cuma pas lagi capek", "Nggak pernah"] },
-      { id: "q11", label: "Aplikasi paling boros baterai?", opsi: ["TikTok", "Shopee", "Instagram", "Game Online", "WhatsApp"] },
-      { id: "q12", label: "Pilihan sarapan paling the best?", opsi: ["Nasi uduk", "Bubur ayam", "Roti bakar", "Air putih doang", "Nggak sarapan"] },
-      { id: "q13", label: "Kalau hujan pas mau pergi, kamu:", opsi: ["Batalin janji", "Tetap pergi", "Nunggu reda", "Pakai jas hujan poncho", "Terobos aja"] },
-      { id: "q14", label: 'Seberapa sering kamu bilang "besok diet"?', opsi: ["Tiap hari", "Abis makan banyak", "Tiap awal bulan", "Nggak pernah bilang", "Kalau diajak temen doang"] },
-      { id: "q15", label: "Kamu tipe orang yang:", opsi: ["Fast response", "Slow response", "Balas kalau ingat", "Cuma read doang", "Nggak dibalas sama sekali"] },
-      { id: "q16", label: "Kalau ada notif grup kantor/tugas?", opsi: ["Langsung read", "Mute selamanya", "Read nanti pas mau tidur", "Cek dari lock screen", "Diabaikan sampai numpuk"] },
-      { id: "q17", label: "Barang wajib bawa keluar rumah?", opsi: ["HP", "Dompet", "Powerbank", "Semua di atas", "Cuma bawa badan"] },
-      { id: "q18", label: "Hal yang paling bikin emosi?", opsi: ["Internet lemot", "Antrean panjang", "Teman PHP", "HP lowbat", "Salah paham di chat"] },
-      { id: "q19", label: "Kamu lebih milih:", opsi: ["Uang banyak tapi sendirian", "Teman banyak tapi bokek", "Pacar pelit", "Hidup santai tapi nggak punya tujuan", "Hidup sibuk tapi kaya"] },
-      { id: "q20", label: "Apa yang lakuin kalau HP jatuh?", opsi: ["Cek layar duluan", "Cek orang sekitar", "Pura-pura nggak terjadi", "Istighfar", "Langsung diambil dengan panik"] },
-    ],
-  },
-  {
-    judul: "Bagian 2",
-    subjudul: "Finansial & Realita",
-    pertanyaan: [
-      { id: "q21", label: "Status keuangan hari ini?", opsi: ["Cuan melimpah", "Boncos kebanyakan self-reward", "Gajian masih jauh", "Numpang hidup ortu", "Masih aman (tapi pas-pasan)"] },
-      { id: "q22", label: "Pengeluaran paling nggak masuk akal?", opsi: ["Checkout keranjang Shopee", "Kopi kekinian", "Top-up game", "Biaya admin transfer", "Beli camilan random"] },
-      { id: "q23", label: "Pemasukan terbesar berasal dari?", opsi: ["Gaji pokok", "Side hustle/Affiliate", "Dana abadi ortu", "Giveaway/Arisan", "Warisan (kalau ada)"] },
-      { id: "q24", label: "Harta paling berharga saat ini?", opsi: ["HP RAM besar", "Koleksi skincare", "Kendaraan nyicil", "Harapan & mimpi", "Foto-foto kenangan"] },
-      { id: "q25", label: 'Definisi "Investasi" versi kamu?', opsi: ["Saham/Kripto", "Skincare", "Makanan enak", "Nabung bawah bantal", "Investasi ilmu/kursus"] },
-      { id: "q26", label: "Kalau saldo tinggal 50 ribu, prioritasnya?", opsi: ["Beli kuota", "Makan enak", "Ditabung", "Jaga-jaga", "Langsung ditarik tunai"] },
-      { id: "q27", label: "Gaya hidup idamkan?", opsi: ["Jadi sultan tanpa kerja", "Stay at home (affiliate)", "Bos besar", "Hidup tenang sederhana", "Traveling keliling dunia"] },
-      { id: "q28", label: "Apa yang dilakuin kalau bokek parah?", opsi: ["Pura-pura sibuk", "Uninstal aplikasi belanja", "Jual barang bekas", "Puasa Senin-Kamis", "Minjem teman"] },
-      { id: "q29", label: "Barang yang bikin istighfar pas lihat harga?", opsi: ["Tiket konser", "Skincare mahal", "Paket data", "Barang flash sale", "Harga bensin/sebak"] },
-      { id: "q30", label: "Target cuan akhir 2026?", opsi: ["Jadi OKB", "Beli barang impian", "Lunas cicilan", "Hidup tenang", "Bisa kasih orang tua"] },
-    ],
-  },
-  {
-    judul: "Bagian 3",
-    subjudul: "Kepo Maksimal",
-    pertanyaan: [
-      { id: "q31", label: "Pekerjaan kamu saat ini?", opsi: ["Karyawan korporat (berangkat pagi pulang malam)", "Affiliate / Content Creator (pejuang algoritma)", "Trader / Investor (hidup dari chart)", "Freelancer (pekerja tanpa jam kerja jelas)", "Masih pelajar / Sedang mencari jati diri"] },
-      { id: "q32", label: "Rata-rata total pendapatanmu per bulan?", opsi: ["Di bawah UMR (cukup buat bertahan hidup)", "Setara UMR (cukup buat makan & bayar kos)", "Di atas UMR (bisa nabung sedikit)", 'Sultan" (pendapatan nggak menentu tapi sering hedon)', "Nggak punya pendapatan (masih disubsidi keluarga)"] },
-      { id: "q33", label: "Total pengeluaran rata-rata per bulan?", opsi: ["Hemat banget (di bawah 1 juta)", "Normal (1 - 3 juta)", "Hedon (3 - 7 juta)", "High class (di atas 7 juta)", "Nggak pernah ngitung (tahu-tahu saldo nol)"] },
-      { id: "q34", label: "Berapa gram emas yang kamu simpan (tabungan)?", opsi: ["Belum punya (lagi nabung buat beli)", "1 - 5 gram (baru mulai investasi)", "5 - 20 gram (sudah mulai aman)", "Di atas 20 gram (investor sejati)", "Emas? Adanya emas-emasan palsu di pasar malam"] },
-      { id: "q35", label: "Status hubungan sama mantan?", opsi: ["Masih chat", "Udah blok total", "Diem-diem an", "Jadi temen", "Gak punya mantan"] },
-      { id: "q36", label: "Berapa kali pindah kerja/pindah haluan dalam 2 tahun terakhir?", opsi: ["Belum pernah", "1 kali", "2-3 kali", "Lebih dari 3 kali", "Masih di tempat pertama"] },
-      { id: "q37", label: "Ada utang/pinjol yang belum lunas?", opsi: ["Gak ada, bersih", "Ada tapi kecil", "Ada dan lumayan", "Banyak, jangan tanya", "Lagi nyicil terus"] },
-      { id: "q38", label: "Siapa yang tau detail gaji/income kamu?", opsi: ["Gak ada yang tau", "Pasangan doang", "Keluarga deket", "Semua temen tau", "Sengaja di-flex ke semua orang"] },
-      { id: "q39", label: "Kalau tiba-tiba dapat 10 juta gratis, ngapain duluan?", opsi: ["Ditabung semua", "Bayar utang dulu", "Healing/liburan", "Belanja barang impian", "Dibagi ke keluarga"] },
-      { id: "q40", label: "Sudah follow X @ceritagenz?", opsi: ["Sudah dong, biar update terus!", "Baru aja follow gara-gara sensus ini.", "Belum, otw cari dulu.", "Sudah dari dulu, follower setia!", "Apa itu X? (Masih pakai cara tradisional)"] },
-    ],
-  },
-];
-
-const TOTAL_PERTANYAAN = BAGIAN.reduce((sum, b) => sum + b.pertanyaan.length, 0);
-
-// Bobot skor 1-5 untuk setiap opsi (index 0-4 = A-E) di setiap pertanyaan q1-q40
-// 1 = vibe santai/pasrah/boncos, 5 = vibe produktif/ambis/cuan
-// Dipakai untuk menghitung total skor (40-200) lalu dipetakan ke 30 golongan
-
-const BOBOT_SKOR = {
-  q1: [2, 4, 1, 1, 3],
-  q2: [3, 2, 4, 1, 5],
-  q3: [2, 3, 1, 4, 5],
-  q4: [3, 2, 1, 5, 2],
-  q5: [5, 1, 1, 3, 4],
-  q6: [3, 3, 3, 1, 3],
-  q7: [2, 4, 1, 3, 5],
-  q8: [1, 2, 2, 1, 1],
-  q9: [1, 2, 3, 4, 1],
-  q10: [2, 3, 2, 2, 5],
-  q11: [2, 3, 2, 2, 3],
-  q12: [4, 4, 3, 5, 1],
-  q13: [2, 4, 1, 5, 4],
-  q14: [3, 2, 4, 5, 2],
-  q15: [5, 2, 3, 1, 1],
-  q16: [5, 1, 2, 3, 1],
-  q17: [3, 3, 3, 5, 1],
-  q18: [2, 2, 3, 2, 2],
-  q19: [3, 2, 1, 1, 5],
-  q20: [4, 3, 1, 2, 2],
-  q21: [5, 1, 2, 1, 4],
-  q22: [2, 3, 2, 4, 2],
-  q23: [4, 5, 1, 2, 2],
-  q24: [3, 2, 3, 1, 2],
-  q25: [5, 2, 1, 1, 5],
-  q26: [2, 1, 5, 4, 1],
-  q27: [1, 3, 4, 5, 3],
-  q28: [2, 4, 5, 3, 1],
-  q29: [3, 3, 2, 2, 3],
-  q30: [4, 3, 4, 5, 5],
-  q31: [4, 4, 5, 3, 1],
-  q32: [2, 3, 4, 4, 1],
-  q33: [5, 4, 2, 1, 1],
-  q34: [1, 2, 4, 5, 1],
-  q35: [2, 4, 2, 3, 3],
-  q36: [5, 3, 2, 1, 4],
-  q37: [5, 3, 2, 1, 2],
-  q38: [3, 3, 2, 1, 2],
-  q39: [4, 3, 2, 1, 5],
-  q40: [3, 4, 1, 5, 2],
-};
-
-// 30 golongan, diurutkan dari skor rendah ke tinggi
-const GOLONGAN = [
-  { nama: "Golongan Rebahan Mutlak", deskripsi: "Energi hidupmu 90% dihabiskan di kasur, dan itu sudah final." },
-  { nama: "Golongan Pasrah Sejati", deskripsi: "Hidup mengalir aja, gak ada yang perlu dipaksain." },
-  { nama: "Golongan Boncos Kronis", deskripsi: "Tanggal muda sultan, tanggal tua jadi rakyat biasa lagi." },
-  { nama: "Golongan Numpang Hidup", deskripsi: "Disubsidi keluarga itu bukan aib, itu strategi." },
-  { nama: "Golongan PHP Sepanjang Masa", deskripsi: "Niatnya banyak, eksekusinya nanti dulu." },
-  { nama: "Golongan Mager Akut", deskripsi: "Kalau mager ada medalinya, kamu juara umum." },
-  { nama: "Golongan Receh Bahagia", deskripsi: "Hidup sederhana, bahagia tetap maksimal." },
-  { nama: "Golongan Halu Produktif", deskripsi: "Mimpi besar, progress nyicil, tapi tetap jalan." },
-  { nama: "Golongan Santuy Berkelas", deskripsi: "Santai tapi tetap kelihatan punya rencana." },
-  { nama: "Golongan Cukup-Cukup Aja", deskripsi: "Gak kekurangan, gak juga kelebihan. Pas." },
-  { nama: "Golongan Hemat Pangkal Survive", deskripsi: "Bukan pelit, cuma realistis sama dompet." },
-  { nama: "Golongan Sibuk Tapi Bingung", deskripsi: "Banyak kerjaan, tapi arah hidup masih dicari." },
-  { nama: "Golongan Ambis Setengah Hati", deskripsi: "Niat ambis ada, eksekusi kadang nyerah duluan." },
-  { nama: "Golongan Stabil Kalem", deskripsi: "Gak heboh, tapi semua berjalan terkendali." },
-  { nama: "Golongan Produktif Kepo", deskripsi: "Kerja jalan, kepoin orang lain juga jalan." },
-  { nama: "Golongan Hustler Receh", deskripsi: "Usaha jalan terus walau hasilnya masih cuan kecil." },
-  { nama: "Golongan Mendekati Sultan", deskripsi: "Belum sultan, tapi udah keliatan arahnya kesana." },
-  { nama: "Golongan Cuan Mengalir", deskripsi: "Rezeki dateng dari berbagai arah, syukur jalan terus." },
-  { nama: "Golongan OKB Beneran", deskripsi: "Orang Kaya Baru yang prestasinya emang nyata." },
-  { nama: "Golongan Sultan Tanpa Beban", deskripsi: "Hidup udah di level santuy karena emang udah aman." },
-  { nama: "Golongan Bertahan Hidup Doang", deskripsi: "Targetnya simpel: survive sampai akhir bulan." },
-  { nama: "Golongan Ngarep Tapi Santai", deskripsi: "Berharap hal baik terjadi, tapi gak maksa diri." },
-  { nama: "Golongan Capek Tapi Lanjut", deskripsi: "Lelah iya, berhenti nanti dulu." },
-  { nama: "Golongan Tukang PHP Diri Sendiri", deskripsi: "Janji ke diri sendiri paling sering diingkari." },
-  { nama: "Golongan Mendadak Bijak", deskripsi: "Kadang random ngomong bijak padahal hidup berantakan." },
-  { nama: "Golongan Modal Nekat", deskripsi: "Rencana belum matang, tapi jalan duluan aja." },
-  { nama: "Golongan Pejuang Tanggal Tua", deskripsi: "Tanggal 25 ke atas adalah arena pertarungan sesungguhnya." },
-  { nama: "Golongan Anti Mainstream", deskripsi: "Pilihan hidupmu emang beda dari kebanyakan orang." },
-  { nama: "Golongan Investor Receh", deskripsi: "Mulai investasi dari nominal kecil, tapi konsisten." },
-  { nama: "Golongan Crazy Rich Receh", deskripsi: "Gaya hidup sultan, kantong masih menyesuaikan." },
-];
-
-function hitungSkorTotal(jawaban, bagianData) {
-  let total = 0;
-  for (const bagian of bagianData) {
-    for (const p of bagian.pertanyaan) {
-      const jawabanTeks = jawaban[p.id];
-      if (!jawabanTeks) continue;
-      const opsiIndex = p.opsi.indexOf(jawabanTeks);
-      if (opsiIndex !== -1 && BOBOT_SKOR[p.id]) {
-        total += BOBOT_SKOR[p.id][opsiIndex] || 3;
-      } else {
-        total += 3; // fallback netral kalau jawaban gak match (seharusnya gak terjadi)
-      }
-    }
-  }
-  return total;
-}
-
-function tentukanGolongan(skorTotal) {
-  // Skor minimum 40 (semua jawab bobot 1), maksimum 200 (semua jawab bobot 5)
-  const MIN_SKOR = 40;
-  const MAX_SKOR = 200;
-  const rentang = MAX_SKOR - MIN_SKOR;
-  const posisi = Math.max(0, Math.min(1, (skorTotal - MIN_SKOR) / rentang));
-  const index = Math.min(GOLONGAN.length - 1, Math.floor(posisi * GOLONGAN.length));
-  return GOLONGAN[index];
-}
-
-// Validasi input nama responden
-// Aturan: hanya huruf dan spasi, maksimal 20 karakter, tidak boleh mengandung kata kasar
-
-const MAX_PANJANG_NAMA = 20;
-
-// Daftar kata kasar/terlarang (Indonesia & Inggris), dicek tanpa case-sensitive
-// Catatan: daftar ini sengaja singkat, fokus ke kata-kata paling umum
-const KATA_TERLARANG = [
-  "anjing", "anjg", "anj", "babi", "bangsat", "bgsat", "kontol", "kntl",
-  "memek", "mmk", "tai", "taik", "goblok", "gblk", "tolol", "idiot",
-  "bajingan", "kampret", "keparat", "asu", "jancok", "jancuk", "cok",
-  "pepek", "pukimak", "lonte", "pelacur", "sundal", "brengsek",
-  "fuck", "shit", "bitch", "asshole", "bastard", "dick", "pussy",
-  "cunt", "slut", "whore", "nigger", "nigga", "fag", "retard",
-];
-
-function validasiNama(input) {
-  const trimmed = input.trim();
-
-  if (trimmed.length === 0) {
-    return { valid: false, pesan: "Nama gak boleh kosong." };
-  }
-
-  if (trimmed.length > MAX_PANJANG_NAMA) {
-    return { valid: false, pesan: `Nama maksimal ${MAX_PANJANG_NAMA} karakter.` };
-  }
-
-  // Hanya boleh huruf dan spasi (termasuk huruf dengan diakritik dasar)
-  const hanyaHuruf = /^[a-zA-Z\s]+$/;
-  if (!hanyaHuruf.test(trimmed)) {
-    return { valid: false, pesan: "Nama cuma boleh huruf, gak boleh angka/simbol." };
-  }
-
-  const lowerInput = trimmed.toLowerCase().replace(/\s+/g, "");
-  for (const kata of KATA_TERLARANG) {
-    if (lowerInput.includes(kata)) {
-      return { valid: false, pesan: "Nama mengandung kata yang gak boleh dipakai." };
-    }
-  }
-
-  return { valid: true, pesan: null };
-}
-
-function bersihkanInputNama(input) {
-  // Hapus karakter selain huruf dan spasi secara real-time saat mengetik
-  return input.replace(/[^a-zA-Z\s]/g, "").slice(0, MAX_PANJANG_NAMA);
-}
-
-const MAX_NAMA = MAX_PANJANG_NAMA;
-
+import { supabase } from "./supabaseClient";
+import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
+import { hitungSkorTotal, tentukanGolongan } from "./golonganData";
+import { validasiNama, bersihkanInputNama, MAX_NAMA } from "./namaValidasi";
 
 export default function App() {
   const [step, setStep] = useState("intro");
@@ -260,17 +41,19 @@ export default function App() {
   }, []);
 
   async function muatData() {
-    try {
-      const result = await window.storage.get("sensus_warganet_2026_v4", true);
-      if (result && result.value) {
-        const parsed = JSON.parse(result.value);
-        setSemuaResponden(parsed);
-        setTotalResponden(parsed.length);
-      }
-    } catch (e) {
-      setSemuaResponden([]);
-      setTotalResponden(0);
-    }
+    const { data, error } = await supabase
+      .from("sensus_responses")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (!error && data) setSemuaResponden(data);
+
+    const { count } = await supabase
+      .from("sensus_responses")
+      .select("*", { count: "exact", head: true });
+
+    if (count !== null) setTotalResponden(count);
   }
 
   function pilih(id, value) {
@@ -311,46 +94,30 @@ export default function App() {
     const skorTotal = hitungSkorTotal(jawaban, BAGIAN);
     const golongan = tentukanGolongan(skorTotal);
 
-    try {
-      let current = [];
-      try {
-        const result = await window.storage.get("sensus_warganet_2026_v4", true);
-        if (result && result.value) current = JSON.parse(result.value);
-      } catch (e) {
-        current = [];
-      }
+    const { error } = await supabase.from("sensus_responses").insert([
+      { ...jawaban, skor: skorTotal, golongan: golongan.nama, nama: namaFinal },
+    ]);
 
-      const entry = {
-        id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
-        created_at: new Date().toISOString(),
-        ...jawaban,
-        skor: skorTotal,
-        golongan: golongan.nama,
-        nama: namaFinal,
-      };
-
-      const updated = [entry, ...current].slice(0, 500);
-      await window.storage.set("sensus_warganet_2026_v4", JSON.stringify(updated), true);
-
-      setSemuaResponden(updated);
-      setTotalResponden(updated.length);
-      setNomorResponden(updated.length);
-      setGolonganHasil(golongan);
-      setNamaTersimpan(namaFinal);
-      setStep("submitted");
-
-      try {
-        localStorage.setItem("sensus_warganet_2026_sudah_isi", "true");
-        localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golongan));
-        localStorage.setItem("sensus_warganet_2026_nomor", String(updated.length));
-        localStorage.setItem("sensus_warganet_2026_nama", namaFinal);
-      } catch (e) {
-        // localStorage tidak tersedia
-      }
-    } catch (e) {
-      setError("Gagal mengirim data. Coba lagi.");
-    } finally {
+    if (error) {
+      setError("Gagal mengirim data. Coba lagi ya.");
       setLoading(false);
+      return;
+    }
+
+    await muatData();
+    setNomorResponden(totalResponden + 1);
+    setGolonganHasil(golongan);
+    setNamaTersimpan(namaFinal);
+    setLoading(false);
+    setStep("submitted");
+
+    try {
+      localStorage.setItem("sensus_warganet_2026_sudah_isi", "true");
+      localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golongan));
+      localStorage.setItem("sensus_warganet_2026_nomor", String(totalResponden + 1));
+      localStorage.setItem("sensus_warganet_2026_nama", namaFinal);
+    } catch (e) {
+      // localStorage tidak tersedia, lewati saja
     }
   }
 
