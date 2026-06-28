@@ -1,0 +1,573 @@
+import { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
+import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
+
+export default function App() {
+  const [step, setStep] = useState("intro");
+  const [jawaban, setJawaban] = useState({});
+  const [semuaResponden, setSemuaResponden] = useState([]);
+  const [totalResponden, setTotalResponden] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [nomorResponden, setNomorResponden] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    muatData();
+  }, []);
+
+  async function muatData() {
+    const { data, error } = await supabase
+      .from("sensus_responses")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (!error && data) setSemuaResponden(data);
+
+    const { count } = await supabase
+      .from("sensus_responses")
+      .select("*", { count: "exact", head: true });
+
+    if (count !== null) setTotalResponden(count);
+  }
+
+  function pilih(id, value) {
+    setJawaban((prev) => ({ ...prev, [id]: value }));
+  }
+
+  const bagianIndex = step.startsWith("bagian-") ? parseInt(step.split("-")[1], 10) : null;
+
+  function bagianTerjawabLengkap(idx) {
+    return BAGIAN[idx].pertanyaan.every((p) => jawaban[p.id]);
+  }
+
+  function lanjutKeBagianSelanjutnya() {
+    if (bagianIndex < BAGIAN.length - 1) {
+      setStep(`bagian-${bagianIndex + 1}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      kirimSensus();
+    }
+  }
+
+  async function kirimSensus() {
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.from("sensus_responses").insert([jawaban]);
+
+    if (error) {
+      setError("Gagal mengirim data. Coba lagi ya.");
+      setLoading(false);
+      return;
+    }
+
+    await muatData();
+    setNomorResponden(totalResponden + 1);
+    setLoading(false);
+    setStep("submitted");
+  }
+
+  const totalTerjawab = Object.keys(jawaban).filter((k) => jawaban[k]).length;
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F8F6F0",
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        color: "#1A1A1A",
+        padding: "24px 16px 64px",
+      }}
+    >
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <KopSurat />
+
+        {step === "intro" && (
+          <Intro onMulai={() => setStep("bagian-0")} jumlahResponden={totalResponden} />
+        )}
+
+        {bagianIndex !== null && (
+          <BagianForm
+            bagian={BAGIAN[bagianIndex]}
+            bagianIndex={bagianIndex}
+            totalBagian={BAGIAN.length}
+            jawaban={jawaban}
+            pilih={pilih}
+            totalTerjawab={totalTerjawab}
+            onLanjut={lanjutKeBagianSelanjutnya}
+            bisaLanjut={bagianTerjawabLengkap(bagianIndex)}
+            isTerakhir={bagianIndex === BAGIAN.length - 1}
+            loading={loading}
+            error={error}
+          />
+        )}
+
+        {step === "submitted" && (
+          <Submitted nomorResponden={nomorResponden} onLihatHasil={() => setStep("hasil")} />
+        )}
+
+        {step === "hasil" && (
+          <Hasil
+            semuaResponden={semuaResponden}
+            totalResponden={totalResponden}
+            onKembali={() => {
+              setStep("intro");
+              setJawaban({});
+            }}
+            onRefresh={muatData}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function KopSurat() {
+  return (
+    <div
+      style={{
+        borderBottom: "3px double #1B3A6B",
+        paddingBottom: 12,
+        marginBottom: 24,
+        textAlign: "center",
+      }}
+    >
+      <div style={{ fontSize: 11, letterSpacing: "0.15em", color: "#6B6B6B", marginBottom: 4 }}>
+        REPUBLIK INTERNET INDONESIA
+      </div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: "#1B3A6B", letterSpacing: "0.02em" }}>
+        SENSUS WARGANET 2026
+      </div>
+      <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 2, fontStyle: "italic" }}>
+        Edisi Lengkap &mdash; {TOTAL_PERTANYAAN} Pertanyaan Kepo Maksimal
+      </div>
+    </div>
+  );
+}
+
+function Intro({ onMulai, jumlahResponden }) {
+  return (
+    <div>
+      <div
+        style={{
+          background: "#FFFFFF",
+          border: "1px solid #D8D4C8",
+          borderRadius: 4,
+          padding: 24,
+          marginBottom: 20,
+        }}
+      >
+        <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0 }}>
+          Dengan ini, Badan Sensus Warganet menetapkan bahwa setiap warganet yang membuka
+          tautan ini secara otomatis terdaftar sebagai responden wajib. Formulir terdiri dari{" "}
+          <strong>{TOTAL_PERTANYAAN} pertanyaan</strong>, dibagi jadi 3 bagian: Kehidupan
+          Sehari-hari, Finansial &amp; Realita, dan Kepo Maksimal.
+        </p>
+        <p style={{ lineHeight: 1.7, fontSize: 15, marginTop: 12, marginBottom: 0 }}>
+          Jawaban tidak diaudit siapa-siapa, tidak dijamin akurat, tapi dijamin jujur. Santai
+          aja, bisa berhenti dan lanjut kapan-kapan&hellip; tapi enaknya sekali jalan emang.
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontSize: 13,
+          color: "#6B6B6B",
+          marginBottom: 20,
+          padding: "0 4px",
+        }}
+      >
+        <span>
+          Status: <strong style={{ color: "#1B3A6B" }}>SENSUS DIBUKA</strong>
+        </span>
+        <span style={{ fontFamily: "'Courier New', monospace" }}>
+          {jumlahResponden} responden terdata
+        </span>
+      </div>
+
+      <button onClick={onMulai} style={btnPrimary}>
+        MULAI SENSUS ({TOTAL_PERTANYAAN} PERTANYAAN)
+      </button>
+    </div>
+  );
+}
+
+function BagianForm({
+  bagian,
+  bagianIndex,
+  totalBagian,
+  jawaban,
+  pilih,
+  totalTerjawab,
+  onLanjut,
+  bisaLanjut,
+  isTerakhir,
+  loading,
+  error,
+}) {
+  return (
+    <div>
+      <SectionHeader
+        judul={bagian.judul}
+        subjudul={bagian.subjudul}
+        totalBagian={totalBagian}
+        totalTerjawab={totalTerjawab}
+      />
+
+      {bagian.pertanyaan.map((p) => {
+        const nomor = p.id.replace("q", "");
+        return (
+          <div key={p.id} style={cardStyle}>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#1B3A6B",
+                fontFamily: "'Courier New', monospace",
+                marginBottom: 8,
+              }}
+            >
+              PERTANYAAN {nomor.padStart(2, "0")}
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, lineHeight: 1.4 }}>
+              {p.label}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {p.opsi.map((opsi, i) => {
+                const huruf = ["A", "B", "C", "D", "E"][i];
+                const aktif = jawaban[p.id] === opsi;
+                return (
+                  <button key={opsi} onClick={() => pilih(p.id, opsi)} style={optionStyle(aktif)}>
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        marginRight: 8,
+                        color: aktif ? "#1B3A6B" : "#9CA3AF",
+                      }}
+                    >
+                      {huruf}.
+                    </span>
+                    {opsi}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {error && (
+        <div style={{ color: "#B91C1C", fontSize: 14, marginBottom: 12, textAlign: "center" }}>
+          {error}
+        </div>
+      )}
+
+      <button
+        onClick={onLanjut}
+        disabled={!bisaLanjut || loading}
+        style={{
+          ...btnPrimary,
+          background: bisaLanjut ? "#1B3A6B" : "#B8B4A8",
+          cursor: bisaLanjut && !loading ? "pointer" : "not-allowed",
+        }}
+      >
+        {loading
+          ? "MENGIRIM..."
+          : isTerakhir
+          ? "SELESAI & KIRIM SENSUS"
+          : `LANJUT KE ${BAGIAN[bagianIndex + 1].judul.toUpperCase()}`}
+      </button>
+      {!bisaLanjut && (
+        <div style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", marginTop: 8 }}>
+          Lengkapi semua pertanyaan di bagian ini dulu, Pak/Bu.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionHeader({ judul, subjudul, totalBagian, totalTerjawab }) {
+  return (
+    <div
+      style={{
+        background: "#1B3A6B",
+        color: "#F8F6F0",
+        borderRadius: 4,
+        padding: "16px 18px",
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <div>
+          <div style={{ fontSize: 12, opacity: 0.75, fontFamily: "'Courier New', monospace" }}>
+            {judul.toUpperCase()} DARI {totalBagian}
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 700, marginTop: 2 }}>{subjudul}</div>
+        </div>
+        <div style={{ fontSize: 12, fontFamily: "'Courier New', monospace", opacity: 0.85 }}>
+          {totalTerjawab}/{TOTAL_PERTANYAAN}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Submitted({ nomorResponden, onLihatHasil }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          background: "#FFFFFF",
+          border: "2px solid #1B3A6B",
+          borderRadius: 4,
+          padding: "32px 24px",
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            border: "3px solid #B91C1C",
+            color: "#B91C1C",
+            borderRadius: "50%",
+            width: 90,
+            height: 90,
+            lineHeight: "84px",
+            fontSize: 11,
+            fontWeight: 700,
+            transform: "rotate(-10deg)",
+            marginBottom: 16,
+            letterSpacing: "0.05em",
+          }}
+        >
+          RESMI
+          <br />
+          TIDAK
+          <br />
+          RESMI
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
+          Selamat, sensus selesai!
+        </div>
+        <div style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>
+          {TOTAL_PERTANYAAN} pertanyaan sudah dijawab. Negara (tidak) berterima kasih.
+        </div>
+        <div
+          style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: 13,
+            color: "#1A1A1A",
+            background: "#F8F6F0",
+            display: "inline-block",
+            padding: "6px 16px",
+            borderRadius: 3,
+            border: "1px dashed #B8B4A8",
+          }}
+        >
+          NOMOR RESPONDEN: #{String(nomorResponden).padStart(4, "0")}
+        </div>
+      </div>
+
+      <button onClick={onLihatHasil} style={btnPrimary}>
+        LIHAT HASIL SENSUS WARGA LAIN
+      </button>
+    </div>
+  );
+}
+
+function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#1B3A6B" }}>
+          HASIL SENSUS ({totalResponden} responden)
+        </div>
+        <button onClick={onRefresh} style={btnGhost}>
+          ⟳ Muat ulang
+        </button>
+      </div>
+
+      {semuaResponden.length === 0 && (
+        <div style={{ textAlign: "center", color: "#9CA3AF", padding: 40 }}>
+          Belum ada data. Jadilah responden pertama!
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {semuaResponden.map((r, idx) => (
+          <ResponPreview key={r.id || idx} respon={r} nomor={totalResponden - idx} />
+        ))}
+      </div>
+
+      <button onClick={onKembali} style={btnSecondary}>
+        KEMBALI KE HALAMAN AWAL
+      </button>
+    </div>
+  );
+}
+
+function ResponPreview({ respon, nomor }) {
+  const [expand, setExpand] = useState(false);
+
+  const sorotan = ["q21", "q31", "q19"];
+
+  return (
+    <div style={cardStyle}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: "'Courier New', monospace",
+          fontSize: 11,
+          color: "#9CA3AF",
+          marginBottom: 8,
+        }}
+      >
+        <span>#{String(nomor).padStart(4, "0")}</span>
+        <span>{formatWaktu(respon.created_at)}</span>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {sorotan.map((id) => (respon[id] ? <Tag key={id} text={respon[id]} /> : null))}
+      </div>
+
+      <button onClick={() => setExpand(!expand)} style={btnExpandStyle}>
+        {expand ? "▲ Tutup semua jawaban" : "▼ Lihat semua 35 jawaban"}
+      </button>
+
+      {expand && (
+        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+          {Array.from({ length: 35 }, (_, i) => `q${i + 1}`).map((id) =>
+            respon[id] ? (
+              <div key={id} style={{ fontSize: 12, lineHeight: 1.5 }}>
+                <span style={{ color: "#9CA3AF", fontFamily: "'Courier New', monospace" }}>
+                  {id.replace("q", "").padStart(2, "0")}.{" "}
+                </span>
+                {respon[id]}
+              </div>
+            ) : null
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Tag({ text }) {
+  if (!text) return null;
+  return (
+    <span
+      style={{
+        background: "#EAF0F8",
+        color: "#1B3A6B",
+        padding: "3px 8px",
+        borderRadius: 3,
+        whiteSpace: "nowrap",
+        fontSize: 11,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function formatWaktu(iso) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (e) {
+    return "";
+  }
+}
+
+const cardStyle = {
+  background: "#FFFFFF",
+  border: "1px solid #D8D4C8",
+  borderRadius: 4,
+  padding: 18,
+  marginBottom: 14,
+};
+
+function optionStyle(aktif) {
+  return {
+    textAlign: "left",
+    padding: "10px 14px",
+    borderRadius: 3,
+    border: aktif ? "1.5px solid #1B3A6B" : "1px solid #D8D4C8",
+    background: aktif ? "#EAF0F8" : "#FFFFFF",
+    color: aktif ? "#1B3A6B" : "#1A1A1A",
+    fontWeight: aktif ? 700 : 400,
+    fontSize: 14,
+    cursor: "pointer",
+    fontFamily: "Georgia, serif",
+    width: "100%",
+    lineHeight: 1.4,
+  };
+}
+
+const btnPrimary = {
+  width: "100%",
+  padding: "14px 0",
+  background: "#1B3A6B",
+  color: "#F8F6F0",
+  border: "none",
+  borderRadius: 4,
+  fontSize: 15,
+  fontWeight: 700,
+  letterSpacing: "0.02em",
+  cursor: "pointer",
+  fontFamily: "Georgia, serif",
+};
+
+const btnSecondary = {
+  width: "100%",
+  padding: "12px 0",
+  background: "#FFFFFF",
+  color: "#1B3A6B",
+  border: "1px solid #1B3A6B",
+  borderRadius: 4,
+  fontSize: 14,
+  fontWeight: 700,
+  cursor: "pointer",
+  marginTop: 20,
+  fontFamily: "Georgia, serif",
+};
+
+const btnGhost = {
+  fontSize: 12,
+  padding: "6px 10px",
+  background: "#FFFFFF",
+  border: "1px solid #D8D4C8",
+  borderRadius: 3,
+  cursor: "pointer",
+  color: "#1B3A6B",
+  fontFamily: "Georgia, serif",
+};
+
+const btnExpandStyle = {
+  fontSize: 12,
+  padding: "6px 0",
+  background: "transparent",
+  border: "none",
+  color: "#1B3A6B",
+  cursor: "pointer",
+  fontFamily: "Georgia, serif",
+  textAlign: "left",
+  width: "100%",
+};
