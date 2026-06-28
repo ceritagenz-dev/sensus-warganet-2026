@@ -66,14 +66,22 @@ export default function App() {
     return BAGIAN[idx].pertanyaan.every((p) => jawaban[p.id]);
   }
 
+  function scrollKeAtas() {
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 0);
+  }
+
   function lanjutKeBagianSelanjutnya() {
     if (bagianIndex < BAGIAN.length - 1) {
       setStep(`bagian-${bagianIndex + 1}`);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollKeAtas();
     } else {
       setError(null);
       setStep("isi-nama");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollKeAtas();
     }
   }
 
@@ -770,14 +778,32 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                fontFamily: "'Courier New', monospace",
-                fontSize: 11,
-                color: "#9CA3AF",
+                alignItems: "baseline",
                 marginBottom: 6,
               }}
             >
-              <span>{r.nama || `Responden #${String(totalResponden - idx).padStart(4, "0")}`}</span>
-              <span>{formatWaktu(r.created_at)}</span>
+              {r.nama ? (
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>{r.nama}</span>
+              ) : (
+                <span
+                  style={{
+                    fontFamily: "'Courier New', monospace",
+                    fontSize: 11,
+                    color: "#9CA3AF",
+                  }}
+                >
+                  Responden #{String(totalResponden - idx).padStart(4, "0")}
+                </span>
+              )}
+              <span
+                style={{
+                  fontFamily: "'Courier New', monospace",
+                  fontSize: 11,
+                  color: "#9CA3AF",
+                }}
+              >
+                {formatWaktu(r.created_at)}
+              </span>
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B" }}>
               {r.golongan || "Belum terklasifikasi"}
