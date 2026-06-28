@@ -1,0 +1,58 @@
+// Data Sensus Warganet 2026 - 35 pertanyaan, 3 bagian
+export const BAGIAN = [
+  {
+    judul: "Bagian 1",
+    subjudul: "Kehidupan Sehari-hari",
+    pertanyaan: [
+      { id: "q1", label: "Kegiatan paling produktif pas lagi mager?", opsi: ["Scroll TikTok", "Nontonin video tutorial", "Tiduran mikir masa depan", "Chat mantan (nggak dikirim)", "Membersihkan galeri HP"] },
+      { id: "q2", label: "Strategi kalau lagi boker di tempat umum?", opsi: ["Pasang musik keras", "Tahan napas", "Nunggu sepi banget", "Pasrah (yang penting plong)", "Langsung keluar (nggak pake lama)"] },
+      { id: "q3", label: "Kebiasaan aneh sebelum tidur?", opsi: ["Scroll sosmed sampai mata perih", "Harus ada suara kipas", "Mikirin kesalahan masa lalu", "Cek kunci pintu 3x", "Harus minum air putih"] },
+      { id: "q4", label: "Kamu tim apa kalau makan mie instan?", opsi: ["Kuah banyak", "Nyemek (air dikit)", "Diremes dimakan mentah", "Mewah (pake telur, keju, kornet)", "Mie instan campur nasi"] },
+      { id: "q5", label: "Reaksi pas ada tukang parkir muncul?", opsi: ["Kasih uang pas", "Pura-pura nggak lihat", 'Bilang "nggak ada receh"', "Senyum terpaksa", "Langsung kasih uang 2 ribuan"] },
+      { id: "q6", label: "Apa barang yang paling sering hilang?", opsi: ["Korek api", "Karet rambut", "Bolpen", "Harapan", "Sandal jepit"] },
+      { id: "q7", label: "Kalau menang undian, hal pertama dilakuin?", opsi: ["Flexing di sosmed", "Langsung resign", "Beli barang nggak penting", "Diam-diam aja", "Langsung sedekah"] },
+      { id: "q8", label: 'Definisi "tunggu 5 menit lagi" versi kamu?', opsi: ["1 jam kemudian", "Nunggu mood balik", "Tidur sebentar", "Nunggu diingetin orang", "Nggak bakal berangkat"] },
+      { id: "q9", label: "Kalau lagi bosen, kamu milih:", opsi: ["Stalking mantan", "Belanja online", "Bersihin galeri HP", "Nonton tutorial masak", "Tidur seharian"] },
+      { id: "q10", label: "Seberapa sering kamu ngomong sendiri?", opsi: ["Tiap detik", "Pas di kamar mandi", "Pas lagi marah", "Cuma pas lagi capek", "Nggak pernah"] },
+      { id: "q11", label: "Aplikasi paling boros baterai?", opsi: ["TikTok", "Shopee", "Instagram", "Game Online", "WhatsApp"] },
+      { id: "q12", label: "Pilihan sarapan paling the best?", opsi: ["Nasi uduk", "Bubur ayam", "Roti bakar", "Air putih doang", "Nggak sarapan"] },
+      { id: "q13", label: "Kalau hujan pas mau pergi, kamu:", opsi: ["Batalin janji", "Tetap pergi", "Nunggu reda", "Pakai jas hujan poncho", "Terobos aja"] },
+      { id: "q14", label: 'Seberapa sering kamu bilang "besok diet"?', opsi: ["Tiap hari", "Abis makan banyak", "Tiap awal bulan", "Nggak pernah bilang", "Kalau diajak temen doang"] },
+      { id: "q15", label: "Kamu tipe orang yang:", opsi: ["Fast response", "Slow response", "Balas kalau ingat", "Cuma read doang", "Nggak dibalas sama sekali"] },
+      { id: "q16", label: "Kalau ada notif grup kantor/tugas?", opsi: ["Langsung read", "Mute selamanya", "Read nanti pas mau tidur", "Cek dari lock screen", "Diabaikan sampai numpuk"] },
+      { id: "q17", label: "Barang wajib bawa keluar rumah?", opsi: ["HP", "Dompet", "Powerbank", "Semua di atas", "Cuma bawa badan"] },
+      { id: "q18", label: "Hal yang paling bikin emosi?", opsi: ["Internet lemot", "Antrean panjang", "Teman PHP", "HP lowbat", "Salah paham di chat"] },
+      { id: "q19", label: "Kamu lebih milih:", opsi: ["Uang banyak tapi sendirian", "Teman banyak tapi bokek", "Pacar pelit", "Hidup santai tapi nggak punya tujuan", "Hidup sibuk tapi kaya"] },
+      { id: "q20", label: "Apa yang lakuin kalau HP jatuh?", opsi: ["Cek layar duluan", "Cek orang sekitar", "Pura-pura nggak terjadi", "Istighfar", "Langsung diambil dengan panik"] },
+    ],
+  },
+  {
+    judul: "Bagian 2",
+    subjudul: "Finansial & Realita",
+    pertanyaan: [
+      { id: "q21", label: "Status keuangan hari ini?", opsi: ["Cuan melimpah", "Boncos kebanyakan self-reward", "Gajian masih jauh", "Numpang hidup ortu", "Masih aman (tapi pas-pasan)"] },
+      { id: "q22", label: "Pengeluaran paling nggak masuk akal?", opsi: ["Checkout keranjang Shopee", "Kopi kekinian", "Top-up game", "Biaya admin transfer", "Beli camilan random"] },
+      { id: "q23", label: "Pemasukan terbesar berasal dari?", opsi: ["Gaji pokok", "Side hustle/Affiliate", "Dana abadi ortu", "Giveaway/Arisan", "Warisan (kalau ada)"] },
+      { id: "q24", label: "Harta paling berharga saat ini?", opsi: ["HP RAM besar", "Koleksi skincare", "Kendaraan nyicil", "Harapan & mimpi", "Foto-foto kenangan"] },
+      { id: "q25", label: 'Definisi "Investasi" versi kamu?', opsi: ["Saham/Kripto", "Skincare", "Makanan enak", "Nabung bawah bantal", "Investasi ilmu/kursus"] },
+      { id: "q26", label: "Kalau saldo tinggal 50 ribu, prioritasnya?", opsi: ["Beli kuota", "Makan enak", "Ditabung", "Jaga-jaga", "Langsung ditarik tunai"] },
+      { id: "q27", label: "Gaya hidup idamkan?", opsi: ["Jadi sultan tanpa kerja", "Stay at home (affiliate)", "Bos besar", "Hidup tenang sederhana", "Traveling keliling dunia"] },
+      { id: "q28", label: "Apa yang dilakuin kalau bokek parah?", opsi: ["Pura-pura sibuk", "Uninstal aplikasi belanja", "Jual barang bekas", "Puasa Senin-Kamis", "Minjem teman"] },
+      { id: "q29", label: "Barang yang bikin istighfar pas lihat harga?", opsi: ["Tiket konser", "Skincare mahal", "Paket data", "Barang flash sale", "Harga bensin/sebak"] },
+      { id: "q30", label: "Target cuan akhir 2026?", opsi: ["Jadi OKB", "Beli barang impian", "Lunas cicilan", "Hidup tenang", "Bisa kasih orang tua"] },
+    ],
+  },
+  {
+    judul: "Bagian 3",
+    subjudul: "Kepo Maksimal",
+    pertanyaan: [
+      { id: "q31", label: "Pekerjaan kamu saat ini?", opsi: ["Karyawan korporat (berangkat pagi pulang malam)", "Affiliate / Content Creator (pejuang algoritma)", "Trader / Investor (hidup dari chart)", "Freelancer (pekerja tanpa jam kerja jelas)", "Masih pelajar / Sedang mencari jati diri"] },
+      { id: "q32", label: "Rata-rata total pendapatanmu per bulan?", opsi: ["Di bawah UMR (cukup buat bertahan hidup)", "Setara UMR (cukup buat makan & bayar kos)", "Di atas UMR (bisa nabung sedikit)", 'Sultan" (pendapatan nggak menentu tapi sering hedon)', "Nggak punya pendapatan (masih disubsidi keluarga)"] },
+      { id: "q33", label: "Total pengeluaran rata-rata per bulan?", opsi: ["Hemat banget (di bawah 1 juta)", "Normal (1 - 3 juta)", "Hedon (3 - 7 juta)", "High class (di atas 7 juta)", "Nggak pernah ngitung (tahu-tahu saldo nol)"] },
+      { id: "q34", label: "Berapa gram emas yang kamu simpan (tabungan)?", opsi: ["Belum punya (lagi nabung buat beli)", "1 - 5 gram (baru mulai investasi)", "5 - 20 gram (sudah mulai aman)", "Di atas 20 gram (investor sejati)", "Emas? Adanya emas-emasan palsu di pasar malam"] },
+      { id: "q35", label: "Sudah follow X @ceritagenz?", opsi: ["Sudah dong, biar update terus!", "Baru aja follow gara-gara sensus ini.", "Belum, otw cari dulu.", "Sudah dari dulu, follower setia!", "Apa itu X? (Masih pakai cara tradisional)"] },
+    ],
+  },
+];
+
+export const TOTAL_PERTANYAAN = BAGIAN.reduce((sum, b) => sum + b.pertanyaan.length, 0);
