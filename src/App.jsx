@@ -261,7 +261,7 @@ export default function App() {
 
   async function muatData() {
     try {
-      const result = await window.storage.get("sensus_warganet_2026_v3", true);
+      const result = await window.storage.get("sensus_warganet_2026_v4", true);
       if (result && result.value) {
         const parsed = JSON.parse(result.value);
         setSemuaResponden(parsed);
@@ -288,6 +288,7 @@ export default function App() {
       setStep(`bagian-${bagianIndex + 1}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
+      setError(null);
       setStep("isi-nama");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -313,7 +314,7 @@ export default function App() {
     try {
       let current = [];
       try {
-        const result = await window.storage.get("sensus_warganet_2026_v3", true);
+        const result = await window.storage.get("sensus_warganet_2026_v4", true);
         if (result && result.value) current = JSON.parse(result.value);
       } catch (e) {
         current = [];
@@ -329,7 +330,7 @@ export default function App() {
       };
 
       const updated = [entry, ...current].slice(0, 500);
-      await window.storage.set("sensus_warganet_2026_v3", JSON.stringify(updated), true);
+      await window.storage.set("sensus_warganet_2026_v4", JSON.stringify(updated), true);
 
       setSemuaResponden(updated);
       setTotalResponden(updated.length);
@@ -702,6 +703,8 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
     setNama(bersih);
   }
 
+  const namaKosong = nama.trim().length === 0;
+
   return (
     <div>
       <div
@@ -720,16 +723,12 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
       </div>
 
       <div style={cardStyle}>
-        <div style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 12, lineHeight: 1.5 }}>
-          Nama ini bakal muncul di hasil sensus, gantiin "Responden #xxxx". Cuma huruf,
-          maksimal {MAX_NAMA} karakter.
-        </div>
         <input
           type="text"
           value={nama}
           onChange={handleChange}
-          placeholder="Contoh: Kevin"
           maxLength={MAX_NAMA}
+          autoFocus
           style={{
             width: "100%",
             padding: "12px 14px",
@@ -743,14 +742,13 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             fontSize: 11,
             color: "#9CA3AF",
             marginTop: 6,
             fontFamily: "'Courier New', monospace",
           }}
         >
-          <span>{errorNama ? "" : ""}</span>
           <span>{nama.length}/{MAX_NAMA}</span>
         </div>
         {errorNama && (
@@ -766,10 +764,11 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
 
       <button
         onClick={onSubmit}
-        disabled={loading}
+        disabled={loading || namaKosong}
         style={{
           ...btnPrimary,
-          cursor: loading ? "not-allowed" : "pointer",
+          background: namaKosong ? "#B8B4A8" : "#1B3A6B",
+          cursor: loading || namaKosong ? "not-allowed" : "pointer",
         }}
       >
         {loading ? "MENGIRIM..." : "SELESAI & KIRIM SENSUS"}
