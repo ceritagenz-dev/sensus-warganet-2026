@@ -139,9 +139,6 @@ function KopSurat() {
       <div style={{ fontSize: 24, fontWeight: 700, color: "#1B3A6B", letterSpacing: "0.02em" }}>
         SENSUS WARGANET 2026
       </div>
-      <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 2, fontStyle: "italic" }}>
-        Edisi Lengkap &mdash; {TOTAL_PERTANYAAN} Pertanyaan Kepo Maksimal
-      </div>
     </div>
   );
 }
@@ -330,24 +327,17 @@ function Submitted({ nomorResponden, onLihatHasil }) {
         <div
           style={{
             display: "inline-block",
-            border: "3px solid #B91C1C",
-            color: "#B91C1C",
-            borderRadius: "50%",
-            width: 90,
-            height: 90,
-            lineHeight: "84px",
-            fontSize: 11,
+            background: "#1B3A6B",
+            color: "#F8F6F0",
+            padding: "6px 18px",
+            borderRadius: 20,
+            fontSize: 12,
             fontWeight: 700,
-            transform: "rotate(-10deg)",
+            letterSpacing: "0.08em",
             marginBottom: 16,
-            letterSpacing: "0.05em",
           }}
         >
-          RESMI
-          <br />
-          TIDAK
-          <br />
-          RESMI
+          SENSUS SELESAI
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
           Selamat, sensus selesai!
