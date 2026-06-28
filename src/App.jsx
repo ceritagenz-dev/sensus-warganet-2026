@@ -12,9 +12,24 @@ export default function App() {
   const [nomorResponden, setNomorResponden] = useState(null);
   const [golonganHasil, setGolonganHasil] = useState(null);
   const [error, setError] = useState(null);
+  const [sudahPernahIsi, setSudahPernahIsi] = useState(false);
 
   useEffect(() => {
     muatData();
+    try {
+      const sudahIsi = localStorage.getItem("sensus_warganet_2026_sudah_isi");
+      if (sudahIsi) {
+        setSudahPernahIsi(true);
+        const golonganTersimpan = localStorage.getItem("sensus_warganet_2026_golongan");
+        const nomorTersimpan = localStorage.getItem("sensus_warganet_2026_nomor");
+        if (golonganTersimpan) {
+          setGolonganHasil(JSON.parse(golonganTersimpan));
+          setNomorResponden(nomorTersimpan ? parseInt(nomorTersimpan, 10) : null);
+        }
+      }
+    } catch (e) {
+      // localStorage tidak tersedia, lanjutkan tanpa pengecekan
+    }
   }, []);
 
   async function muatData() {
@@ -74,6 +89,14 @@ export default function App() {
     setGolonganHasil(golongan);
     setLoading(false);
     setStep("submitted");
+
+    try {
+      localStorage.setItem("sensus_warganet_2026_sudah_isi", "true");
+      localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golongan));
+      localStorage.setItem("sensus_warganet_2026_nomor", String(totalResponden + 1));
+    } catch (e) {
+      // localStorage tidak tersedia, lewati saja
+    }
   }
 
   const totalTerjawab = Object.keys(jawaban).filter((k) => jawaban[k]).length;
@@ -92,7 +115,14 @@ export default function App() {
         <KopSurat />
 
         {step === "intro" && (
-          <Intro onMulai={() => setStep("bagian-0")} jumlahResponden={totalResponden} />
+          <Intro
+            onMulai={() => setStep("bagian-0")}
+            jumlahResponden={totalResponden}
+            sudahPernahIsi={sudahPernahIsi}
+            golonganHasil={golonganHasil}
+            nomorResponden={nomorResponden}
+            onLihatHasil={() => setStep("hasil")}
+          />
         )}
 
         {bagianIndex !== null && (
@@ -155,7 +185,87 @@ function KopSurat() {
   );
 }
 
-function Intro({ onMulai, jumlahResponden }) {
+function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorResponden, onLihatHasil }) {
+  if (sudahPernahIsi) {
+    return (
+      <div>
+        <div
+          style={{
+            background: "#FFFFFF",
+            border: "1px solid #D8D4C8",
+            borderRadius: 4,
+            padding: 24,
+            marginBottom: 20,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-block",
+              background: "#B8B4A8",
+              color: "#FFFFFF",
+              padding: "6px 18px",
+              borderRadius: 20,
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              marginBottom: 16,
+            }}
+          >
+            SUDAH TERCATAT
+          </div>
+          <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0 }}>
+            Kamu sudah pernah mengisi sensus ini dari perangkat ini. Setiap warganet hanya
+            bisa disensus satu kali biar datanya tetap valid.
+          </p>
+
+          {golonganHasil && (
+            <div
+              style={{
+                background: "#F8F6F0",
+                border: "1.5px dashed #1B3A6B",
+                borderRadius: 6,
+                padding: "16px 18px",
+                marginTop: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6B6B6B",
+                  fontFamily: "'Courier New', monospace",
+                  marginBottom: 6,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                HASIL SENSUS KAMU
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B" }}>
+                {golonganHasil.nama}
+              </div>
+              {nomorResponden && (
+                <div
+                  style={{
+                    fontFamily: "'Courier New', monospace",
+                    fontSize: 12,
+                    color: "#6B6B6B",
+                    marginTop: 8,
+                  }}
+                >
+                  Responden #{String(nomorResponden).padStart(4, "0")}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <button onClick={onLihatHasil} style={btnPrimary}>
+          LIHAT HASIL SENSUS WARGA LAIN
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div
@@ -174,8 +284,8 @@ function Intro({ onMulai, jumlahResponden }) {
           Sehari-hari, Finansial &amp; Realita, dan Kepo Maksimal.
         </p>
         <p style={{ lineHeight: 1.7, fontSize: 15, marginTop: 12, marginBottom: 0 }}>
-          Jawaban tidak diaudit siapa-siapa, tidak dijamin akurat, tapi dijamin jujur. Santai
-          aja, bisa berhenti dan lanjut kapan-kapan&hellip; tapi enaknya sekali jalan emang.
+          Jawaban tidak diaudit siapa-siapa, tidak dijamin akurat, tapi dijamin jujur. Setiap
+          warganet hanya bisa disensus satu kali, jadi pastikan jawabanmu jujur dari awal.
         </p>
       </div>
 
