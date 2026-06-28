@@ -259,6 +259,8 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
           )}
         </div>
 
+        {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
+
         <button onClick={onLihatHasil} style={btnPrimary}>
           LIHAT HASIL SENSUS WARGA LAIN
         </button>
