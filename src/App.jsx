@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
+import { hitungSkorTotal, tentukanGolongan } from "./golonganData";
 
 export default function App() {
   const [step, setStep] = useState("intro");
@@ -9,6 +10,7 @@ export default function App() {
   const [totalResponden, setTotalResponden] = useState(0);
   const [loading, setLoading] = useState(false);
   const [nomorResponden, setNomorResponden] = useState(null);
+  const [golonganHasil, setGolonganHasil] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -54,7 +56,12 @@ export default function App() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.from("sensus_responses").insert([jawaban]);
+    const skorTotal = hitungSkorTotal(jawaban, BAGIAN);
+    const golongan = tentukanGolongan(skorTotal);
+
+    const { error } = await supabase.from("sensus_responses").insert([
+      { ...jawaban, skor: skorTotal, golongan: golongan.nama },
+    ]);
 
     if (error) {
       setError("Gagal mengirim data. Coba lagi ya.");
@@ -64,6 +71,7 @@ export default function App() {
 
     await muatData();
     setNomorResponden(totalResponden + 1);
+    setGolonganHasil(golongan);
     setLoading(false);
     setStep("submitted");
   }
@@ -104,7 +112,11 @@ export default function App() {
         )}
 
         {step === "submitted" && (
-          <Submitted nomorResponden={nomorResponden} onLihatHasil={() => setStep("hasil")} />
+          <Submitted
+            nomorResponden={nomorResponden}
+            golonganHasil={golonganHasil}
+            onLihatHasil={() => setStep("hasil")}
+          />
         )}
 
         {step === "hasil" && (
@@ -312,7 +324,7 @@ function SectionHeader({ judul, subjudul, totalBagian, totalTerjawab }) {
   );
 }
 
-function Submitted({ nomorResponden, onLihatHasil }) {
+function Submitted({ nomorResponden, golonganHasil, onLihatHasil }) {
   return (
     <div style={{ textAlign: "center" }}>
       <div
@@ -345,6 +357,38 @@ function Submitted({ nomorResponden, onLihatHasil }) {
         <div style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>
           Makasih udah jujur, warganet sejati!
         </div>
+
+        {golonganHasil && (
+          <div
+            style={{
+              background: "#F8F6F0",
+              border: "1.5px dashed #1B3A6B",
+              borderRadius: 6,
+              padding: "16px 18px",
+              marginBottom: 16,
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                color: "#6B6B6B",
+                fontFamily: "'Courier New', monospace",
+                marginBottom: 6,
+                letterSpacing: "0.05em",
+              }}
+            >
+              KAMU TERMASUK
+            </div>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
+              {golonganHasil.nama}
+            </div>
+            <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
+              {golonganHasil.deskripsi}
+            </div>
+          </div>
+        )}
+
         <div
           style={{
             fontFamily: "'Courier New', monospace",
@@ -361,11 +405,92 @@ function Submitted({ nomorResponden, onLihatHasil }) {
         </div>
       </div>
 
+      {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
+
       <button onClick={onLihatHasil} style={btnPrimary}>
         LIHAT HASIL SENSUS WARGA LAIN
       </button>
     </div>
   );
+}
+
+function ShareButtons({ golonganHasil }) {
+  const [salinStatus, setSalinStatus] = useState(null);
+
+  const linkWebsite = typeof window !== "undefined" ? window.location.href : "";
+  const teksShare = `Hasil Sensus Warganet 2026 aku: ${golonganHasil.nama}!\n"${golonganHasil.deskripsi}"\n\nIkutan sensusnya di ${linkWebsite}`;
+
+  function shareWhatsApp() {
+    const url = `https://wa.me/?text=${encodeURIComponent(teksShare)}`;
+    window.open(url, "_blank");
+  }
+
+  function shareX() {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(teksShare)}`;
+    window.open(url, "_blank");
+  }
+
+  async function copyUntuk(platform) {
+    try {
+      await navigator.clipboard.writeText(teksShare);
+      setSalinStatus(platform);
+      setTimeout(() => setSalinStatus(null), 2500);
+    } catch (e) {
+      setSalinStatus("gagal");
+      setTimeout(() => setSalinStatus(null), 2500);
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div
+        style={{
+          fontSize: 12,
+          color: "#6B6B6B",
+          marginBottom: 8,
+          fontFamily: "'Courier New', monospace",
+          letterSpacing: "0.05em",
+        }}
+      >
+        BAGIKAN HASIL SENSUS
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+        <button onClick={shareWhatsApp} style={btnShare("#1B3A6B")}>
+          WhatsApp
+        </button>
+        <button onClick={shareX} style={btnShare("#1B3A6B")}>
+          X
+        </button>
+        <button onClick={() => copyUntuk("TikTok")} style={btnShare("#FFFFFF", "#1B3A6B")}>
+          Copy buat TikTok
+        </button>
+        <button onClick={() => copyUntuk("Instagram Story")} style={btnShare("#FFFFFF", "#1B3A6B")}>
+          Copy buat IG Story
+        </button>
+      </div>
+      {salinStatus && (
+        <div style={{ fontSize: 12, color: "#1B3A6B", fontWeight: 700 }}>
+          {salinStatus === "gagal"
+            ? "Gagal menyalin, coba lagi."
+            : `Tersalin! Tinggal paste di ${salinStatus}.`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function btnShare(bg, border) {
+  return {
+    padding: "10px 0",
+    background: bg,
+    color: bg === "#FFFFFF" ? "#1B3A6B" : "#F8F6F0",
+    border: border ? `1px solid ${border}` : "none",
+    borderRadius: 4,
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: "Georgia, serif",
+  };
 }
 
 function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
@@ -395,7 +520,24 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {semuaResponden.map((r, idx) => (
-          <ResponPreview key={r.id || idx} respon={r} nomor={totalResponden - idx} />
+          <div key={r.id || idx} style={cardStyle}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontFamily: "'Courier New', monospace",
+                fontSize: 11,
+                color: "#9CA3AF",
+                marginBottom: 6,
+              }}
+            >
+              <span>Responden #{String(totalResponden - idx).padStart(4, "0")}</span>
+              <span>{formatWaktu(r.created_at)}</span>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B" }}>
+              {r.golongan || "Belum terklasifikasi"}
+            </div>
+          </div>
         ))}
       </div>
 
@@ -403,71 +545,6 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
         KEMBALI KE HALAMAN AWAL
       </button>
     </div>
-  );
-}
-
-function ResponPreview({ respon, nomor }) {
-  const [expand, setExpand] = useState(false);
-
-  const sorotan = ["q21", "q31", "q19"];
-
-  return (
-    <div style={cardStyle}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          fontFamily: "'Courier New', monospace",
-          fontSize: 11,
-          color: "#9CA3AF",
-          marginBottom: 8,
-        }}
-      >
-        <span>#{String(nomor).padStart(4, "0")}</span>
-        <span>{formatWaktu(respon.created_at)}</span>
-      </div>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-        {sorotan.map((id) => (respon[id] ? <Tag key={id} text={respon[id]} /> : null))}
-      </div>
-
-      <button onClick={() => setExpand(!expand)} style={btnExpandStyle}>
-        {expand ? "▲ Tutup semua jawaban" : "▼ Lihat semua 35 jawaban"}
-      </button>
-
-      {expand && (
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-          {Array.from({ length: 35 }, (_, i) => `q${i + 1}`).map((id) =>
-            respon[id] ? (
-              <div key={id} style={{ fontSize: 12, lineHeight: 1.5 }}>
-                <span style={{ color: "#9CA3AF", fontFamily: "'Courier New', monospace" }}>
-                  {id.replace("q", "").padStart(2, "0")}.{" "}
-                </span>
-                {respon[id]}
-              </div>
-            ) : null
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Tag({ text }) {
-  if (!text) return null;
-  return (
-    <span
-      style={{
-        background: "#EAF0F8",
-        color: "#1B3A6B",
-        padding: "3px 8px",
-        borderRadius: 3,
-        whiteSpace: "nowrap",
-        fontSize: 11,
-      }}
-    >
-      {text}
-    </span>
   );
 }
 
