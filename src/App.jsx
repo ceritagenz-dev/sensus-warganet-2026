@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
-import { hitungSkorTotal, tentukanGolongan } from "./golonganData";
+import { hitungSkorTotal, tentukanGolongan, pilihDeskripsiAcak } from "./golonganData";
 import { validasiNama, bersihkanInputNama, MAX_NAMA } from "./namaValidasi";
 
 export default function App() {
@@ -101,9 +101,17 @@ export default function App() {
 
     const skorTotal = hitungSkorTotal(jawaban, BAGIAN);
     const golongan = tentukanGolongan(skorTotal);
+    const deskripsiTerpilih = pilihDeskripsiAcak(golongan);
+    const golonganUntukDisimpan = { nama: golongan.nama, deskripsi: deskripsiTerpilih };
 
     const { error } = await supabase.from("sensus_responses").insert([
-      { ...jawaban, skor: skorTotal, golongan: golongan.nama, nama: namaFinal },
+      {
+        ...jawaban,
+        skor: skorTotal,
+        golongan: golongan.nama,
+        golongan_deskripsi: deskripsiTerpilih,
+        nama: namaFinal,
+      },
     ]);
 
     if (error) {
@@ -114,14 +122,14 @@ export default function App() {
 
     await muatData();
     setNomorResponden(totalResponden + 1);
-    setGolonganHasil(golongan);
+    setGolonganHasil(golonganUntukDisimpan);
     setNamaTersimpan(namaFinal);
     setLoading(false);
     setStep("submitted");
 
     try {
       localStorage.setItem("sensus_warganet_2026_sudah_isi", "true");
-      localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golongan));
+      localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golonganUntukDisimpan));
       localStorage.setItem("sensus_warganet_2026_nomor", String(totalResponden + 1));
       localStorage.setItem("sensus_warganet_2026_nama", namaFinal);
     } catch (e) {
@@ -288,9 +296,14 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
                   {namaTersimpan}
                 </div>
               )}
-              <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B" }}>
+              <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
                 {golonganHasil.nama}
               </div>
+              {golonganHasil.deskripsi && (
+                <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
+                  {golonganHasil.deskripsi}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -805,9 +818,14 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
                 {formatWaktu(r.created_at)}
               </span>
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B", marginBottom: 4 }}>
               {r.golongan || "Belum terklasifikasi"}
             </div>
+            {r.golongan_deskripsi && (
+              <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
+                {r.golongan_deskripsi}
+              </div>
+            )}
           </div>
         ))}
       </div>
