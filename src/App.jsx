@@ -711,7 +711,7 @@ function ShareButtons({ golonganHasil }) {
   const [salinStatus, setSalinStatus] = useState(null);
 
   const linkWebsite = typeof window !== "undefined" ? window.location.href : "";
-  const teksShare = `Hasil Sensus Warganet 2026 aku: ${golonganHasil.nama}!\n"${golonganHasil.deskripsi}"\n\nIkutan sensusnya di ${linkWebsite}`;
+  const teksShare = `Hasil Sensus Warganet 2026 aku: ${golonganHasil.nama}!\n"${golonganHasil.deskripsi}"\n\nRekomendasi Resmi Negara: ${golonganHasil.rekomendasi}\n\nIkutan sensusnya di ${linkWebsite}`;
 
   function shareWhatsApp() {
     const url = `https://wa.me/?text=${encodeURIComponent(teksShare)}`;
