@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
 import { hitungSkorTotal, tentukanGolongan, pilihDeskripsiAcak } from "./golonganData";
+import { pilihRekomendasiAcak } from "./rekomendasiData";
 import { validasiNama, bersihkanInputNama, MAX_NAMA } from "./namaValidasi";
 
 export default function App() {
@@ -102,7 +103,12 @@ export default function App() {
     const skorTotal = hitungSkorTotal(jawaban, BAGIAN);
     const golongan = tentukanGolongan(skorTotal);
     const deskripsiTerpilih = pilihDeskripsiAcak(golongan);
-    const golonganUntukDisimpan = { nama: golongan.nama, deskripsi: deskripsiTerpilih };
+    const rekomendasiTerpilih = pilihRekomendasiAcak(golongan.nama);
+    const golonganUntukDisimpan = {
+      nama: golongan.nama,
+      deskripsi: deskripsiTerpilih,
+      rekomendasi: rekomendasiTerpilih,
+    };
 
     const { error } = await supabase.from("sensus_responses").insert([
       {
@@ -110,6 +116,7 @@ export default function App() {
         skor: skorTotal,
         golongan: golongan.nama,
         golongan_deskripsi: deskripsiTerpilih,
+        golongan_rekomendasi: rekomendasiTerpilih,
         nama: namaFinal,
       },
     ]);
@@ -307,6 +314,10 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
             </div>
           )}
         </div>
+
+        {golonganHasil && golonganHasil.rekomendasi && (
+          <RekomendasiBox teks={golonganHasil.rekomendasi} />
+        )}
 
         {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
 
@@ -630,6 +641,10 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
           </div>
         )}
 
+        {golonganHasil && golonganHasil.rekomendasi && (
+          <RekomendasiBox teks={golonganHasil.rekomendasi} />
+        )}
+
         <div
           style={{
             fontFamily: "'Courier New', monospace",
@@ -651,6 +666,43 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
       <button onClick={onLihatHasil} style={btnPrimary}>
         LIHAT HASIL SENSUS WARGA LAIN
       </button>
+    </div>
+  );
+}
+
+function RekomendasiBox({ teks }) {
+  return (
+    <div
+      style={{
+        background: "#FDF2F2",
+        border: "1.5px solid #B91C1C",
+        borderRadius: 6,
+        padding: "16px 18px",
+        marginBottom: 16,
+        textAlign: "left",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          marginBottom: 8,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            color: "#B91C1C",
+            fontFamily: "'Courier New', monospace",
+            letterSpacing: "0.05em",
+            fontWeight: 700,
+          }}
+        >
+          ⚠ REKOMENDASI RESMI NEGARA
+        </span>
+      </div>
+      <div style={{ fontSize: 14, color: "#7A2020", lineHeight: 1.6 }}>{teks}</div>
     </div>
   );
 }
@@ -760,6 +812,9 @@ function btnShare(bg, border) {
 }
 
 function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
+  // Cuma tampilkan responden yang sudah punya format lengkap (golongan + deskripsi)
+  const respondenValid = semuaResponden.filter((r) => r.golongan_deskripsi);
+
   return (
     <div>
       <div
@@ -771,21 +826,21 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
         }}
       >
         <div style={{ fontSize: 16, fontWeight: 700, color: "#1B3A6B" }}>
-          HASIL SENSUS ({totalResponden} responden)
+          HASIL SENSUS ({respondenValid.length} responden)
         </div>
         <button onClick={onRefresh} style={btnGhost}>
           ⟳ Muat ulang
         </button>
       </div>
 
-      {semuaResponden.length === 0 && (
+      {respondenValid.length === 0 && (
         <div style={{ textAlign: "center", color: "#9CA3AF", padding: 40 }}>
           Belum ada data. Jadilah responden pertama!
         </div>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {semuaResponden.map((r, idx) => (
+        {respondenValid.map((r, idx) => (
           <div key={r.id || idx} style={cardStyle}>
             <div
               style={{
@@ -805,7 +860,7 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
                     color: "#9CA3AF",
                   }}
                 >
-                  #{String(totalResponden - idx).padStart(4, "0")}
+                  #{String(respondenValid.length - idx).padStart(4, "0")}
                 </span>
               </span>
               <span
@@ -819,13 +874,12 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
               </span>
             </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B", marginBottom: 4 }}>
-              {r.golongan || "Belum terklasifikasi"}
+              {r.golongan}
             </div>
-            {r.golongan_deskripsi && (
-              <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
-                {r.golongan_deskripsi}
-              </div>
-            )}
+            <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5, marginBottom: 10 }}>
+              {r.golongan_deskripsi}
+            </div>
+            {r.golongan_rekomendasi && <RekomendasiBox teks={r.golongan_rekomendasi} />}
           </div>
         ))}
       </div>
