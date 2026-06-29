@@ -604,7 +604,7 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
           SENSUS SELESAI
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
-          Selamat, sensus selesai!
+          {namaTersimpan ? `Selamat ${namaTersimpan}, sensus selesai!` : "Selamat, sensus selesai!"}
         </div>
         <div style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>
           Makasih udah jujur, warganet sejati!
@@ -644,21 +644,6 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
         {golonganHasil && golonganHasil.rekomendasi && (
           <RekomendasiBox teks={golonganHasil.rekomendasi} />
         )}
-
-        <div
-          style={{
-            fontFamily: "'Courier New', monospace",
-            fontSize: 13,
-            color: "#1A1A1A",
-            background: "#F8F6F0",
-            display: "inline-block",
-            padding: "6px 16px",
-            borderRadius: 3,
-            border: "1px dashed #B8B4A8",
-          }}
-        >
-          {namaTersimpan || `RESPONDEN #${String(nomorResponden).padStart(4, "0")}`}
-        </div>
       </div>
 
       {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
