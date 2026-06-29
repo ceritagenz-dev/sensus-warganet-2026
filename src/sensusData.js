@@ -55,7 +55,7 @@ export const BAGIAN = [
       { id: "q37", label: "Ada utang/pinjol yang belum lunas?", opsi: ["Gak ada, bersih", "Ada tapi kecil", "Ada dan lumayan", "Banyak, jangan tanya", "Lagi nyicil terus"] },
       { id: "q38", label: "Siapa yang tau detail gaji/income kamu?", opsi: ["Gak ada yang tau", "Pasangan doang", "Keluarga deket", "Semua temen tau", "Sengaja di-flex ke semua orang"] },
       { id: "q39", label: "Kalau tiba-tiba dapat 10 juta gratis, ngapain duluan?", opsi: ["Ditabung semua", "Bayar utang dulu", "Healing/liburan", "Belanja barang impian", "Dibagi ke keluarga"] },
-      { id: "q40", label: "Sudah follow X @ceritagenz?", opsi: ["Sudah dong, biar update terus!", "Baru aja follow gara-gara sensus ini.", "Belum, otw cari dulu.", "Sudah dari dulu, follower setia!", "Apa itu X? (Masih pakai cara tradisional)"] },
+      { id: "q40", label: "Kalau libur panjang, pilih ngapain?", opsi: ["Staycation", "Mudik", "Healing sendiri", "Kerja sampingan", "Tidur doang"] },
     ],
   },
 ];
