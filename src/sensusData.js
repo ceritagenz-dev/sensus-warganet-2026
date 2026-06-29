@@ -38,7 +38,7 @@ export const BAGIAN = [
       { id: "q26", label: "Kalau saldo tinggal 50 ribu, prioritasnya?", opsi: ["Beli kuota", "Makan enak", "Ditabung", "Jaga-jaga", "Langsung ditarik tunai"] },
       { id: "q27", label: "Gaya hidup idamkan?", opsi: ["Jadi sultan tanpa kerja", "Stay at home (affiliate)", "Bos besar", "Hidup tenang sederhana", "Traveling keliling dunia"] },
       { id: "q28", label: "Apa yang dilakuin kalau bokek parah?", opsi: ["Pura-pura sibuk", "Uninstal aplikasi belanja", "Jual barang bekas", "Puasa Senin-Kamis", "Minjem teman"] },
-      { id: "q29", label: "Barang yang bikin istighfar pas lihat harga?", opsi: ["Tiket konser", "Skincare mahal", "Paket data", "Barang flash sale", "Harga bensin/sebak"] },
+      { id: "q29", label: "Barang yang bikin istighfar pas lihat harga?", opsi: ["Tiket konser", "Skincare mahal", "Paket data", "Barang flash sale", "Harga bensin/sembako"] },
       { id: "q30", label: "Target cuan akhir 2026?", opsi: ["Jadi OKB", "Beli barang impian", "Lunas cicilan", "Hidup tenang", "Bisa kasih orang tua"] },
     ],
   },
