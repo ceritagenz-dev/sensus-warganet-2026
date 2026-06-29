@@ -83,8 +83,8 @@ export const BOBOT_SKOR = {
   q38: [3, 4, 3, 2, 1],
   // q39: ditabung semua(disiplin) / bayar utang(bijak) / healing(konsumtif) / belanja impian(konsumtif) / dibagi keluarga(sosial-tinggi)
   q39: [5, 5, 2, 1, 4],
-  // q40: sudah follow lama(loyal) / baru follow(responsif) / belum(netral) / follower setia(loyal tinggi) / ga tau X(gaptek)
-  q40: [4, 3, 2, 5, 1],
+  // q40: staycation(konsumtif sedang) / mudik(sosial-keluarga) / healing sendiri(self-care) / kerja sampingan(produktif tinggi) / tidur doang(pasif)
+  q40: [3, 3, 2, 5, 1],
 };
 
 // 30 golongan, diurutkan dari skor rendah ke tinggi
