@@ -5,8 +5,34 @@ import { hitungSkorTotal, tentukanGolongan, pilihDeskripsiAcak } from "./golonga
 import { pilihRekomendasiAcak } from "./rekomendasiData";
 import { validasiNama, bersihkanInputNama, MAX_NAMA } from "./namaValidasi";
 
+// ====== TOKEN DESAIN ======
+const WARNA = {
+  primer: "#4338CA",
+  primerGelap: "#312399",
+  aksenTerang: "#6D5CE7",
+  kuning: "#FBBF24",
+  kuningGelap: "#F59E0B",
+  bgSoft: "#EEF2FF",
+  putih: "#FFFFFF",
+  teksGelap: "#1E1B4B",
+  teksAbu: "#6B647F",
+  garis: "#DDD6FE",
+};
+
+const FONT_DISPLAY = "'Baloo 2', 'Fredoka', system-ui, sans-serif";
+const FONT_BODY = "'Quicksand', system-ui, -apple-system, sans-serif";
+
+const gradientBg =
+  "linear-gradient(160deg, #4338CA 0%, #5A47D6 35%, #6D5CE7 70%, #8B7CF0 100%)";
+
+// Daftar flat semua 40 pertanyaan, dengan referensi bagian asalnya
+const SEMUA_PERTANYAAN = BAGIAN.flatMap((bagian) =>
+  bagian.pertanyaan.map((p) => ({ ...p, namaBagian: bagian.subjudul }))
+);
+
 export default function App() {
   const [step, setStep] = useState("intro");
+  const [pertanyaanIndex, setPertanyaanIndex] = useState(0);
   const [jawaban, setJawaban] = useState({});
   const [semuaResponden, setSemuaResponden] = useState([]);
   const [totalResponden, setTotalResponden] = useState(0);
@@ -57,16 +83,6 @@ export default function App() {
     if (count !== null) setTotalResponden(count);
   }
 
-  function pilih(id, value) {
-    setJawaban((prev) => ({ ...prev, [id]: value }));
-  }
-
-  const bagianIndex = step.startsWith("bagian-") ? parseInt(step.split("-")[1], 10) : null;
-
-  function bagianTerjawabLengkap(idx) {
-    return BAGIAN[idx].pertanyaan.every((p) => jawaban[p.id]);
-  }
-
   function scrollKeAtas() {
     setTimeout(() => {
       window.scrollTo(0, 0);
@@ -75,13 +91,25 @@ export default function App() {
     }, 0);
   }
 
-  function lanjutKeBagianSelanjutnya() {
-    if (bagianIndex < BAGIAN.length - 1) {
-      setStep(`bagian-${bagianIndex + 1}`);
-      scrollKeAtas();
-    } else {
-      setError(null);
-      setStep("isi-nama");
+  // Klik jawaban: simpan, lalu auto-advance ke soal berikutnya setelah jeda singkat
+  function pilihJawaban(id, value) {
+    setJawaban((prev) => ({ ...prev, [id]: value }));
+
+    setTimeout(() => {
+      if (pertanyaanIndex < SEMUA_PERTANYAAN.length - 1) {
+        setPertanyaanIndex((prev) => prev + 1);
+        scrollKeAtas();
+      } else {
+        setError(null);
+        setStep("isi-nama");
+        scrollKeAtas();
+      }
+    }, 260);
+  }
+
+  function kembaliKeSoalSebelumnya() {
+    if (pertanyaanIndex > 0) {
+      setPertanyaanIndex((prev) => prev - 1);
       scrollKeAtas();
     }
   }
@@ -144,46 +172,50 @@ export default function App() {
     }
   }
 
-  const totalTerjawab = Object.keys(jawaban).filter((k) => jawaban[k]).length;
+  function mulaiSensus() {
+    setPertanyaanIndex(0);
+    setStep("soal");
+    scrollKeAtas();
+  }
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#F8F6F0",
-        fontFamily: "Georgia, 'Times New Roman', serif",
-        color: "#1A1A1A",
-        padding: "24px 16px 64px",
+        background: gradientBg,
+        fontFamily: FONT_BODY,
+        color: WARNA.teksGelap,
+        padding: "28px 16px 64px",
       }}
     >
-      <div style={{ maxWidth: 640, margin: "0 auto" }}>
-        <KopSurat />
-
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+      `}</style>
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
         {step === "intro" && (
-          <Intro
-            onMulai={() => setStep("bagian-0")}
-            jumlahResponden={totalResponden}
-            sudahPernahIsi={sudahPernahIsi}
-            golonganHasil={golonganHasil}
-            nomorResponden={nomorResponden}
-            namaTersimpan={namaTersimpan}
-            onLihatHasil={() => setStep("hasil")}
-          />
+          <>
+            <KopSurat />
+            <Intro
+              onMulai={mulaiSensus}
+              jumlahResponden={totalResponden}
+              sudahPernahIsi={sudahPernahIsi}
+              golonganHasil={golonganHasil}
+              nomorResponden={nomorResponden}
+              namaTersimpan={namaTersimpan}
+              onLihatHasil={() => setStep("hasil")}
+            />
+          </>
         )}
 
-        {bagianIndex !== null && (
-          <BagianForm
-            bagian={BAGIAN[bagianIndex]}
-            bagianIndex={bagianIndex}
-            totalBagian={BAGIAN.length}
-            jawaban={jawaban}
-            pilih={pilih}
-            totalTerjawab={totalTerjawab}
-            onLanjut={lanjutKeBagianSelanjutnya}
-            bisaLanjut={bagianTerjawabLengkap(bagianIndex)}
-            isTerakhir={bagianIndex === BAGIAN.length - 1}
-            loading={loading}
-            error={error}
+        {step === "soal" && (
+          <SoalTunggal
+            pertanyaan={SEMUA_PERTANYAAN[pertanyaanIndex]}
+            nomorSoal={pertanyaanIndex + 1}
+            totalSoal={SEMUA_PERTANYAAN.length}
+            jawabanTerpilih={jawaban[SEMUA_PERTANYAAN[pertanyaanIndex].id]}
+            onPilih={pilihJawaban}
+            onKembali={kembaliKeSoalSebelumnya}
+            bisaKembali={pertanyaanIndex > 0}
           />
         )}
 
@@ -225,54 +257,54 @@ export default function App() {
 
 function KopSurat() {
   return (
-    <div
-      style={{
-        borderBottom: "3px double #1B3A6B",
-        paddingBottom: 12,
-        marginBottom: 24,
-        textAlign: "center",
-      }}
-    >
-      <div style={{ fontSize: 11, letterSpacing: "0.15em", color: "#6B6B6B", marginBottom: 4 }}>
+    <div style={{ textAlign: "center", marginBottom: 24 }}>
+      <div style={{ fontSize: 28, marginBottom: 4 }}>🇮🇩</div>
+      <div
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.18em",
+          color: "rgba(255,255,255,0.85)",
+          marginBottom: 6,
+          fontFamily: FONT_BODY,
+          fontWeight: 600,
+        }}
+      >
         REPUBLIK INTERNET INDONESIA
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: "#1B3A6B", letterSpacing: "0.02em" }}>
-        SENSUS WARGANET 2026
+      <div
+        style={{
+          fontSize: 32,
+          fontWeight: 800,
+          color: WARNA.putih,
+          letterSpacing: "0.01em",
+          fontFamily: FONT_DISPLAY,
+          textShadow: "0 3px 0 rgba(49,35,153,0.4)",
+          lineHeight: 1.1,
+        }}
+      >
+        SENSUS WARGANET
+        <br />
+        2026
       </div>
     </div>
   );
 }
 
-function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorResponden, namaTersimpan, onLihatHasil }) {
+function Intro({
+  onMulai,
+  jumlahResponden,
+  sudahPernahIsi,
+  golonganHasil,
+  nomorResponden,
+  namaTersimpan,
+  onLihatHasil,
+}) {
   if (sudahPernahIsi) {
     return (
       <div>
-        <div
-          style={{
-            background: "#FFFFFF",
-            border: "1px solid #D8D4C8",
-            borderRadius: 4,
-            padding: 24,
-            marginBottom: 20,
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-block",
-              background: "#B8B4A8",
-              color: "#FFFFFF",
-              padding: "6px 18px",
-              borderRadius: 20,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              marginBottom: 16,
-            }}
-          >
-            SUDAH TERCATAT
-          </div>
-          <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0 }}>
+        <div style={kartuPutih}>
+          <BadgePita teks="SUDAH TERCATAT" warna={WARNA.teksAbu} />
+          <p style={{ lineHeight: 1.7, fontSize: 15, margin: "14px 0 0", color: WARNA.teksGelap }}>
             Kamu sudah pernah mengisi sensus ini dari perangkat ini. Setiap warganet hanya
             bisa disensus satu kali biar datanya tetap valid.
           </p>
@@ -280,34 +312,40 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
           {golonganHasil && (
             <div
               style={{
-                background: "#F8F6F0",
-                border: "1.5px dashed #1B3A6B",
-                borderRadius: 6,
-                padding: "16px 18px",
-                marginTop: 16,
+                background: WARNA.bgSoft,
+                border: `2px dashed ${WARNA.aksenTerang}`,
+                borderRadius: 16,
+                padding: "18px 20px",
+                marginTop: 18,
               }}
             >
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#6B6B6B",
-                  fontFamily: "'Courier New', monospace",
-                  marginBottom: 6,
-                  letterSpacing: "0.05em",
-                }}
-              >
-                HASIL SENSUS KAMU
-              </div>
+              <div style={labelKecil}>HASIL SENSUS KAMU</div>
               {namaTersimpan && (
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 700,
+                    color: WARNA.teksGelap,
+                    marginBottom: 4,
+                    fontFamily: FONT_DISPLAY,
+                  }}
+                >
                   {namaTersimpan}
                 </div>
               )}
-              <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 21,
+                  fontWeight: 800,
+                  color: WARNA.primer,
+                  marginBottom: 8,
+                  fontFamily: FONT_DISPLAY,
+                }}
+              >
                 {golonganHasil.nama}
               </div>
               {golonganHasil.deskripsi && (
-                <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
+                <div style={{ fontSize: 14, color: WARNA.teksAbu, lineHeight: 1.6 }}>
                   {golonganHasil.deskripsi}
                 </div>
               )}
@@ -322,7 +360,7 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
         {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
 
         <button onClick={onLihatHasil} style={btnPrimary}>
-          LIHAT HASIL SENSUS WARGA LAIN
+          Lihat hasil sensus warga lain
         </button>
       </div>
     );
@@ -330,25 +368,34 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
 
   return (
     <div>
-      <div
-        style={{
-          background: "#FFFFFF",
-          border: "1px solid #D8D4C8",
-          borderRadius: 4,
-          padding: 24,
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0 }}>
+      <div style={kartuPutih}>
+        <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0, color: WARNA.teksGelap }}>
           Dengan ini, Badan Sensus Warganet menetapkan bahwa setiap warganet yang membuka
           tautan ini secara otomatis terdaftar sebagai responden wajib. Formulir terdiri dari{" "}
-          <strong>{TOTAL_PERTANYAAN} pertanyaan</strong>, dibagi jadi 3 bagian: Kehidupan
-          Sehari-hari, Finansial &amp; Realita, dan Kepo Maksimal.
+          <strong>{TOTAL_PERTANYAAN} pertanyaan</strong> jujur-jujuran. Gak ada jawaban benar
+          atau salah, cuma ada jawaban yang bikin kamu mikir sendiri.
         </p>
-        <p style={{ lineHeight: 1.7, fontSize: 15, marginTop: 12, marginBottom: 0 }}>
+        <p style={{ lineHeight: 1.7, fontSize: 15, marginTop: 12, marginBottom: 0, color: WARNA.teksGelap }}>
           Jawaban tidak diaudit siapa-siapa, tidak dijamin akurat, tapi dijamin jujur. Setiap
-          warganet hanya bisa disensus satu kali, jadi pastikan jawabanmu jujur dari awal.
+          warganet hanya bisa disensus satu kali.
         </p>
+
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 16,
+            background: WARNA.bgSoft,
+            padding: "8px 14px",
+            borderRadius: 20,
+            fontSize: 13,
+            fontWeight: 600,
+            color: WARNA.primer,
+          }}
+        >
+          🏆 30 golongan · Hasil acak tiap golongan
+        </div>
       </div>
 
       <div
@@ -357,141 +404,129 @@ function Intro({ onMulai, jumlahResponden, sudahPernahIsi, golonganHasil, nomorR
           justifyContent: "space-between",
           alignItems: "center",
           fontSize: 13,
-          color: "#6B6B6B",
-          marginBottom: 20,
+          color: "rgba(255,255,255,0.9)",
+          marginBottom: 18,
           padding: "0 4px",
+          fontWeight: 600,
         }}
       >
-        <span>
-          Status: <strong style={{ color: "#1B3A6B" }}>SENSUS DIBUKA</strong>
-        </span>
-        <span style={{ fontFamily: "'Courier New', monospace" }}>
-          {jumlahResponden} responden terdata
-        </span>
+        <span>🟢 SENSUS DIBUKA</span>
+        <span>{jumlahResponden} responden terdata</span>
       </div>
 
-      <button onClick={onMulai} style={btnPrimary}>
-        MULAI SENSUS ({TOTAL_PERTANYAAN} PERTANYAAN)
+      <button onClick={onMulai} style={btnKuning}>
+        Mulai Sensus →
       </button>
     </div>
   );
 }
 
-function BagianForm({
-  bagian,
-  bagianIndex,
-  totalBagian,
-  jawaban,
-  pilih,
-  totalTerjawab,
-  onLanjut,
-  bisaLanjut,
-  isTerakhir,
-  loading,
-  error,
-}) {
+function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPilih, onKembali, bisaKembali }) {
+  const persen = Math.round((nomorSoal / totalSoal) * 100);
+
   return (
     <div>
-      <SectionHeader
-        judul={bagian.judul}
-        subjudul={bagian.subjudul}
-        totalBagian={totalBagian}
-        totalTerjawab={totalTerjawab}
-      />
-
-      {bagian.pertanyaan.map((p) => {
-        const nomor = p.id.replace("q", "");
-        return (
-          <div key={p.id} style={cardStyle}>
-            <div
-              style={{
-                fontSize: 13,
-                color: "#1B3A6B",
-                fontFamily: "'Courier New', monospace",
-                marginBottom: 8,
-              }}
-            >
-              PERTANYAAN {nomor.padStart(2, "0")}
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, lineHeight: 1.4 }}>
-              {p.label}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {p.opsi.map((opsi, i) => {
-                const huruf = ["A", "B", "C", "D", "E"][i];
-                const aktif = jawaban[p.id] === opsi;
-                return (
-                  <button key={opsi} onClick={() => pilih(p.id, opsi)} style={optionStyle(aktif)}>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        marginRight: 8,
-                        color: aktif ? "#1B3A6B" : "#9CA3AF",
-                      }}
-                    >
-                      {huruf}.
-                    </span>
-                    {opsi}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      {error && (
-        <div style={{ color: "#B91C1C", fontSize: 14, marginBottom: 12, textAlign: "center" }}>
-          {error}
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+            color: WARNA.putih,
+          }}
+        >
+          <span style={{ fontWeight: 700, fontSize: 14 }}>
+            Soal {nomorSoal} / {totalSoal}
+          </span>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontWeight: 700,
+              fontSize: 14,
+              background: "rgba(255,255,255,0.18)",
+              padding: "3px 10px",
+              borderRadius: 12,
+            }}
+          >
+            🔥 {persen}%
+          </span>
         </div>
-      )}
-
-      <button
-        onClick={onLanjut}
-        disabled={!bisaLanjut || loading}
-        style={{
-          ...btnPrimary,
-          background: bisaLanjut ? "#1B3A6B" : "#B8B4A8",
-          cursor: bisaLanjut && !loading ? "pointer" : "not-allowed",
-        }}
-      >
-        {loading
-          ? "MENGIRIM..."
-          : isTerakhir
-          ? "SELESAI & KIRIM SENSUS"
-          : `LANJUT KE ${BAGIAN[bagianIndex + 1].judul.toUpperCase()}`}
-      </button>
-      {!bisaLanjut && (
-        <div style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", marginTop: 8 }}>
-          Lengkapi semua pertanyaan di bagian ini dulu, Pak/Bu.
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SectionHeader({ judul, subjudul, totalBagian, totalTerjawab }) {
-  return (
-    <div
-      style={{
-        background: "#1B3A6B",
-        color: "#F8F6F0",
-        borderRadius: 4,
-        padding: "16px 18px",
-        marginBottom: 16,
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div>
-          <div style={{ fontSize: 12, opacity: 0.75, fontFamily: "'Courier New', monospace" }}>
-            {judul.toUpperCase()} DARI {totalBagian}
-          </div>
-          <div style={{ fontSize: 19, fontWeight: 700, marginTop: 2 }}>{subjudul}</div>
-        </div>
-        <div style={{ fontSize: 12, fontFamily: "'Courier New', monospace", opacity: 0.85 }}>
-          {totalTerjawab}/{TOTAL_PERTANYAAN}
+        <div
+          style={{
+            height: 10,
+            background: "rgba(255,255,255,0.25)",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${persen}%`,
+              background: `linear-gradient(90deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
+              borderRadius: 10,
+              transition: "width 0.3s ease",
+            }}
+          />
         </div>
       </div>
+
+      <div style={kartuPutih}>
+        <div
+          style={{
+            fontSize: 19,
+            fontWeight: 700,
+            marginBottom: 18,
+            lineHeight: 1.4,
+            color: WARNA.primer,
+            fontFamily: FONT_DISPLAY,
+          }}
+        >
+          {pertanyaan.label}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {pertanyaan.opsi.map((opsi, i) => {
+            const huruf = ["A", "B", "C", "D", "E"][i];
+            const aktif = jawabanTerpilih === opsi;
+            return (
+              <button
+                key={opsi}
+                onClick={() => onPilih(pertanyaan.id, opsi)}
+                style={optionStyle(aktif)}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    marginRight: 12,
+                    fontWeight: 700,
+                    fontSize: 13,
+                    background: aktif ? WARNA.primer : WARNA.bgSoft,
+                    color: aktif ? WARNA.putih : WARNA.primer,
+                    flexShrink: 0,
+                  }}
+                >
+                  {huruf}
+                </span>
+                {opsi}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {bisaKembali && (
+        <button onClick={onKembali} style={btnKembali}>
+          ← Soal sebelumnya
+        </button>
+      )}
     </div>
   );
 }
@@ -506,57 +541,63 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
 
   return (
     <div>
-      <div
-        style={{
-          background: "#1B3A6B",
-          color: "#F8F6F0",
-          borderRadius: 4,
-          padding: "16px 18px",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ fontSize: 12, opacity: 0.75, fontFamily: "'Courier New', monospace" }}>
-          LANGKAH TERAKHIR
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{ fontSize: 44, marginBottom: 8 }}>✍️</div>
+        <div
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            color: WARNA.putih,
+            fontFamily: FONT_DISPLAY,
+            textShadow: "0 2px 0 rgba(49,35,153,0.35)",
+          }}
+        >
+          Siapa nama kamu?
         </div>
-        <div style={{ fontSize: 19, fontWeight: 700, marginTop: 2 }}>Siapa nama kamu?</div>
       </div>
 
-      <div style={cardStyle}>
+      <div style={kartuPutih}>
+        <div style={{ fontSize: 14, color: WARNA.teksAbu, marginBottom: 12, lineHeight: 1.5 }}>
+          Nama ini bakal muncul di hasil sensus dan bisa diliat responden lain.
+        </div>
         <input
           type="text"
           value={nama}
           onChange={handleChange}
+          placeholder="Nama / nickname kamu"
           maxLength={MAX_NAMA}
           autoFocus
           style={{
             width: "100%",
-            padding: "12px 14px",
+            padding: "14px 16px",
             fontSize: 16,
-            border: errorNama ? "1.5px solid #B91C1C" : "1px solid #B8B4A8",
-            borderRadius: 3,
-            fontFamily: "Georgia, serif",
+            border: errorNama ? `2px solid #DC2626` : `2px solid ${WARNA.garis}`,
+            borderRadius: 14,
+            fontFamily: FONT_BODY,
             boxSizing: "border-box",
+            outline: "none",
+            color: WARNA.teksGelap,
           }}
         />
         <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
-            fontSize: 11,
-            color: "#9CA3AF",
+            fontSize: 12,
+            color: WARNA.teksAbu,
             marginTop: 6,
-            fontFamily: "'Courier New', monospace",
+            fontWeight: 600,
           }}
         >
           <span>{nama.length}/{MAX_NAMA}</span>
         </div>
         {errorNama && (
-          <div style={{ color: "#B91C1C", fontSize: 13, marginTop: 6 }}>{errorNama}</div>
+          <div style={{ color: "#DC2626", fontSize: 13, marginTop: 6, fontWeight: 600 }}>{errorNama}</div>
         )}
       </div>
 
       {errorKirim && (
-        <div style={{ color: "#B91C1C", fontSize: 14, marginBottom: 12, textAlign: "center" }}>
+        <div style={{ color: "#FFF", background: "#DC2626", borderRadius: 12, padding: "10px 14px", fontSize: 14, marginBottom: 12, textAlign: "center", fontWeight: 600 }}>
           {errorKirim}
         </div>
       )}
@@ -565,12 +606,12 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
         onClick={onSubmit}
         disabled={loading || namaKosong}
         style={{
-          ...btnPrimary,
-          background: namaKosong ? "#B8B4A8" : "#1B3A6B",
+          ...btnKuning,
+          opacity: namaKosong ? 0.5 : 1,
           cursor: loading || namaKosong ? "not-allowed" : "pointer",
         }}
       >
-        {loading ? "MENGIRIM..." : "SELESAI & KIRIM SENSUS"}
+        {loading ? "Mengirim..." : "Lihat Hasil Sensus →"}
       </button>
     </div>
   );
@@ -578,78 +619,59 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
 
 function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil }) {
   return (
-    <div style={{ textAlign: "center" }}>
-      <div
-        style={{
-          background: "#FFFFFF",
-          border: "2px solid #1B3A6B",
-          borderRadius: 4,
-          padding: "32px 24px",
-          marginBottom: 20,
-        }}
-      >
+    <div>
+      <div style={{ textAlign: "center", marginBottom: 6 }}>
+        <div style={{ fontSize: 44 }}>🏆</div>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
+          Hasil Sensus Warganet untuk
+        </div>
         <div
           style={{
-            display: "inline-block",
-            background: "#1B3A6B",
-            color: "#F8F6F0",
-            padding: "6px 18px",
-            borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            marginBottom: 16,
+            fontSize: 30,
+            fontWeight: 800,
+            color: WARNA.putih,
+            fontFamily: FONT_DISPLAY,
+            textShadow: "0 3px 0 rgba(49,35,153,0.4)",
+            marginTop: 2,
           }}
         >
-          SENSUS SELESAI
+          {namaTersimpan || "Warganet"}
         </div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
-          {namaTersimpan ? `Selamat ${namaTersimpan}, sensus selesai!` : "Selamat, sensus selesai!"}
-        </div>
-        <div style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>
-          Makasih udah jujur, warganet sejati!
-        </div>
+      </div>
 
+      <div style={{ ...kartuPutih, textAlign: "center", marginTop: 14 }}>
         {golonganHasil && (
-          <div
-            style={{
-              background: "#F8F6F0",
-              border: "1.5px dashed #1B3A6B",
-              borderRadius: 6,
-              padding: "16px 18px",
-              marginBottom: 16,
-              textAlign: "center",
-            }}
-          >
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: WARNA.teksAbu, letterSpacing: "0.05em" }}>
+              GOLONGAN BARU TERDETEKSI
+            </div>
             <div
               style={{
-                fontSize: 11,
-                color: "#6B6B6B",
-                fontFamily: "'Courier New', monospace",
-                marginBottom: 6,
-                letterSpacing: "0.05em",
+                fontSize: 26,
+                fontWeight: 800,
+                color: WARNA.primer,
+                fontFamily: FONT_DISPLAY,
+                margin: "6px 0 10px",
+                lineHeight: 1.2,
               }}
             >
-              KAMU TERMASUK
-            </div>
-            <div style={{ fontSize: 19, fontWeight: 700, color: "#1B3A6B", marginBottom: 6 }}>
               {golonganHasil.nama}
             </div>
-            <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 14, color: WARNA.teksAbu, lineHeight: 1.6, marginBottom: 16 }}>
               {golonganHasil.deskripsi}
             </div>
-          </div>
-        )}
-
-        {golonganHasil && golonganHasil.rekomendasi && (
-          <RekomendasiBox teks={golonganHasil.rekomendasi} />
+          </>
         )}
       </div>
 
+      {golonganHasil && golonganHasil.rekomendasi && (
+        <RekomendasiBox teks={golonganHasil.rekomendasi} />
+      )}
+
       {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
 
-      <button onClick={onLihatHasil} style={btnPrimary}>
-        LIHAT HASIL SENSUS WARGA LAIN
+      <button onClick={onLihatHasil} style={btnSecondary}>
+        Lihat hasil sensus warga lain
       </button>
     </div>
   );
@@ -659,35 +681,29 @@ function RekomendasiBox({ teks }) {
   return (
     <div
       style={{
-        background: "#FDF2F2",
-        border: "1.5px solid #B91C1C",
-        borderRadius: 6,
+        background: WARNA.putih,
+        border: `2px solid ${WARNA.kuningGelap}`,
+        borderRadius: 18,
         padding: "16px 18px",
         marginBottom: 16,
         textAlign: "left",
+        boxShadow: "0 4px 14px rgba(49,35,153,0.15)",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 8,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={{ fontSize: 16 }}>📜</span>
         <span
           style={{
-            fontSize: 11,
-            color: "#B91C1C",
-            fontFamily: "'Courier New', monospace",
+            fontSize: 12,
+            color: WARNA.kuningGelap,
             letterSpacing: "0.05em",
-            fontWeight: 700,
+            fontWeight: 800,
           }}
         >
-          ⚠ REKOMENDASI RESMI NEGARA
+          REKOMENDASI RESMI NEGARA
         </span>
       </div>
-      <div style={{ fontSize: 14, color: "#7A2020", lineHeight: 1.6 }}>{teks}</div>
+      <div style={{ fontSize: 14, color: WARNA.teksGelap, lineHeight: 1.6 }}>{teks}</div>
     </div>
   );
 }
@@ -723,34 +739,40 @@ function ShareButtons({ golonganHasil }) {
     <div style={{ marginBottom: 14 }}>
       <div
         style={{
-          fontSize: 12,
-          color: "#6B6B6B",
-          marginBottom: 8,
-          fontFamily: "'Courier New', monospace",
-          letterSpacing: "0.05em",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.9)",
+          marginBottom: 10,
+          fontWeight: 700,
+          textAlign: "center",
         }}
       >
-        BAGIKAN HASIL SENSUS
+        Bagikan hasil sensus lo
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-        <button onClick={shareWhatsApp} style={btnShare("#1B3A6B")}>
-          WhatsApp
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 9 }}>
+        <button onClick={shareWhatsApp} style={btnShare("#25D366")}>
+          💬 WhatsApp
         </button>
-        <button onClick={shareX} style={btnShare("#1B3A6B")}>
-          X
+        <button onClick={shareX} style={btnShare("#000000")}>
+          𝕏 Post
         </button>
-        <button onClick={() => copyUntuk("TikTok")} style={btnShare("#FFFFFF", "#1B3A6B")}>
-          Copy buat TikTok
+        <button onClick={() => copyUntuk("TikTok")} style={btnShare(WARNA.putih, WARNA.primer)}>
+          🎵 Copy TikTok
         </button>
-        <button onClick={() => copyUntuk("Instagram Story")} style={btnShare("#FFFFFF", "#1B3A6B")}>
-          Copy buat IG Story
+        <button onClick={() => copyUntuk("Instagram Story")} style={btnShare(WARNA.putih, WARNA.primer)}>
+          📸 Copy IG Story
         </button>
       </div>
       {salinStatus && (
-        <div style={{ fontSize: 12, color: "#1B3A6B", fontWeight: 700, marginBottom: 8 }}>
-          {salinStatus === "gagal"
-            ? "Gagal menyalin, coba lagi."
-            : `Tersalin! Tinggal paste di ${salinStatus}.`}
+        <div
+          style={{
+            fontSize: 12,
+            color: WARNA.putih,
+            fontWeight: 700,
+            marginBottom: 8,
+            textAlign: "center",
+          }}
+        >
+          {salinStatus === "gagal" ? "Gagal menyalin, coba lagi." : `Tersalin! Tinggal paste di ${salinStatus}.`}
         </div>
       )}
 
@@ -758,15 +780,15 @@ function ShareButtons({ golonganHasil }) {
         onClick={() => window.open("https://x.com/ceritagenz", "_blank")}
         style={{
           width: "100%",
-          padding: "10px 0",
+          padding: "12px 0",
           background: "#000000",
-          color: "#FFFFFF",
+          color: WARNA.putih,
           border: "none",
-          borderRadius: 4,
-          fontSize: 13,
+          borderRadius: 16,
+          fontSize: 14,
           fontWeight: 700,
           cursor: "pointer",
-          fontFamily: "Georgia, serif",
+          fontFamily: FONT_BODY,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -783,95 +805,176 @@ function ShareButtons({ golonganHasil }) {
 }
 
 function btnShare(bg, border) {
+  const isLight = bg === WARNA.putih;
   return {
-    padding: "10px 0",
+    padding: "12px 0",
     background: bg,
-    color: bg === "#FFFFFF" ? "#1B3A6B" : "#F8F6F0",
-    border: border ? `1px solid ${border}` : "none",
-    borderRadius: 4,
-    fontSize: 13,
+    color: isLight ? WARNA.primer : WARNA.putih,
+    border: border ? `2px solid ${border}` : "none",
+    borderRadius: 16,
+    fontSize: 14,
     fontWeight: 700,
     cursor: "pointer",
-    fontFamily: "Georgia, serif",
+    fontFamily: FONT_BODY,
   };
 }
 
 function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
-  // Cuma tampilkan responden yang sudah punya format lengkap (golongan + deskripsi)
   const respondenValid = semuaResponden.filter((r) => r.golongan_deskripsi);
 
   return (
     <div>
+      <div style={{ textAlign: "center", marginBottom: 6, position: "relative" }}>
+        <button
+          onClick={onKembali}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 8,
+            background: "none",
+            border: "none",
+            color: WARNA.putih,
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          ← Kembali
+        </button>
+        <div
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            color: WARNA.putih,
+            fontFamily: FONT_DISPLAY,
+            textShadow: "0 3px 0 rgba(49,35,153,0.4)",
+          }}
+        >
+          Hasil Sensus Warganet
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 4, fontWeight: 600 }}>
+          Daftar lengkap, yang paling baru ngisi muncul di atas
+        </div>
+      </div>
+
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
+          justifyContent: "flex-end",
+          marginBottom: 14,
+          marginTop: 18,
+          gap: 10,
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#1B3A6B" }}>
-          HASIL SENSUS ({respondenValid.length} responden)
-        </div>
+        <span
+          style={{
+            fontSize: 13,
+            color: WARNA.putih,
+            fontWeight: 700,
+            background: "rgba(255,255,255,0.18)",
+            padding: "4px 12px",
+            borderRadius: 12,
+          }}
+        >
+          {respondenValid.length} responden
+        </span>
         <button onClick={onRefresh} style={btnGhost}>
           ⟳ Muat ulang
         </button>
       </div>
 
       {respondenValid.length === 0 && (
-        <div style={{ textAlign: "center", color: "#9CA3AF", padding: 40 }}>
+        <div
+          style={{
+            textAlign: "center",
+            color: "rgba(255,255,255,0.85)",
+            padding: 40,
+            fontWeight: 600,
+          }}
+        >
           Belum ada data. Jadilah responden pertama!
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {respondenValid.map((r, idx) => (
-          <div key={r.id || idx} style={cardStyle}>
+          <div key={r.id || idx} style={kartuPutih}>
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "baseline",
-                marginBottom: 6,
+                marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>
-                {r.nama || "Anonim"}{" "}
-                <span
-                  style={{
-                    fontFamily: "'Courier New', monospace",
-                    fontSize: 12,
-                    fontWeight: 400,
-                    color: "#9CA3AF",
-                  }}
-                >
-                  #{String(respondenValid.length - idx).padStart(4, "0")}
-                </span>
-              </span>
               <span
                 style={{
-                  fontFamily: "'Courier New', monospace",
-                  fontSize: 11,
-                  color: "#9CA3AF",
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: WARNA.teksGelap,
+                  fontFamily: FONT_DISPLAY,
                 }}
               >
+                {r.nama || "Anonim"}
+              </span>
+              <span style={{ fontSize: 11, color: WARNA.teksAbu, fontWeight: 600 }}>
                 {formatWaktu(r.created_at)}
               </span>
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#1B3A6B", marginBottom: 4 }}>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: WARNA.primer,
+                marginBottom: 8,
+                fontFamily: FONT_DISPLAY,
+              }}
+            >
               {r.golongan}
             </div>
-            <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5, marginBottom: 10 }}>
+            <div style={{ fontSize: 13.5, color: WARNA.teksAbu, lineHeight: 1.6, marginBottom: r.golongan_rekomendasi ? 12 : 0 }}>
               {r.golongan_deskripsi}
             </div>
-            {r.golongan_rekomendasi && <RekomendasiBox teks={r.golongan_rekomendasi} />}
+            {r.golongan_rekomendasi && (
+              <div
+                style={{
+                  background: WARNA.bgSoft,
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  fontSize: 12.5,
+                  color: WARNA.primerGelap,
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong>📜 Rekomendasi:</strong> {r.golongan_rekomendasi}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       <button onClick={onKembali} style={btnSecondary}>
-        KEMBALI KE HALAMAN AWAL
+        Kembali ke Halaman Awal
       </button>
+    </div>
+  );
+}
+
+function BadgePita({ teks, warna }) {
+  return (
+    <div
+      style={{
+        display: "inline-block",
+        background: warna || WARNA.primer,
+        color: WARNA.putih,
+        padding: "7px 18px",
+        borderRadius: 20,
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: "0.06em",
+      }}
+    >
+      {teks}
     </div>
   );
 }
@@ -891,78 +994,107 @@ function formatWaktu(iso) {
   }
 }
 
-const cardStyle = {
-  background: "#FFFFFF",
-  border: "1px solid #D8D4C8",
-  borderRadius: 4,
-  padding: 18,
-  marginBottom: 14,
+const kartuPutih = {
+  background: WARNA.putih,
+  borderRadius: 22,
+  padding: 22,
+  marginBottom: 16,
+  boxShadow: "0 8px 24px rgba(30,27,75,0.22)",
+};
+
+const labelKecil = {
+  fontSize: 12,
+  color: WARNA.aksenTerang,
+  fontWeight: 800,
+  letterSpacing: "0.06em",
+  marginBottom: 8,
 };
 
 function optionStyle(aktif) {
   return {
+    display: "flex",
+    alignItems: "center",
     textAlign: "left",
-    padding: "10px 14px",
-    borderRadius: 3,
-    border: aktif ? "1.5px solid #1B3A6B" : "1px solid #D8D4C8",
-    background: aktif ? "#EAF0F8" : "#FFFFFF",
-    color: aktif ? "#1B3A6B" : "#1A1A1A",
-    fontWeight: aktif ? 700 : 400,
-    fontSize: 14,
+    padding: "13px 14px",
+    borderRadius: 16,
+    border: aktif ? `2px solid ${WARNA.primer}` : `2px solid ${WARNA.garis}`,
+    background: aktif ? WARNA.bgSoft : WARNA.putih,
+    color: WARNA.teksGelap,
+    fontWeight: aktif ? 700 : 500,
+    fontSize: 15,
     cursor: "pointer",
-    fontFamily: "Georgia, serif",
+    fontFamily: FONT_BODY,
     width: "100%",
     lineHeight: 1.4,
+    transition: "all 0.15s ease",
   };
 }
 
+const btnKuning = {
+  width: "100%",
+  padding: "16px 0",
+  background: `linear-gradient(135deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
+  color: WARNA.primerGelap,
+  border: "none",
+  borderRadius: 20,
+  fontSize: 16,
+  fontWeight: 800,
+  letterSpacing: "0.01em",
+  cursor: "pointer",
+  fontFamily: FONT_DISPLAY,
+  boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+};
+
 const btnPrimary = {
   width: "100%",
-  padding: "14px 0",
-  background: "#1B3A6B",
-  color: "#F8F6F0",
+  padding: "15px 0",
+  background: WARNA.putih,
+  color: WARNA.primer,
   border: "none",
-  borderRadius: 4,
+  borderRadius: 20,
   fontSize: 15,
-  fontWeight: 700,
-  letterSpacing: "0.02em",
+  fontWeight: 800,
   cursor: "pointer",
-  fontFamily: "Georgia, serif",
+  fontFamily: FONT_DISPLAY,
+  boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
 };
 
 const btnSecondary = {
   width: "100%",
-  padding: "12px 0",
-  background: "#FFFFFF",
-  color: "#1B3A6B",
-  border: "1px solid #1B3A6B",
-  borderRadius: 4,
-  fontSize: 14,
-  fontWeight: 700,
+  padding: "15px 0",
+  background: WARNA.putih,
+  color: WARNA.primer,
+  border: "none",
+  borderRadius: 20,
+  fontSize: 15,
+  fontWeight: 800,
   cursor: "pointer",
-  marginTop: 20,
-  fontFamily: "Georgia, serif",
+  marginTop: 8,
+  fontFamily: FONT_DISPLAY,
+  boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
 };
 
 const btnGhost = {
   fontSize: 12,
-  padding: "6px 10px",
-  background: "#FFFFFF",
-  border: "1px solid #D8D4C8",
-  borderRadius: 3,
+  padding: "5px 12px",
+  background: "rgba(255,255,255,0.18)",
+  border: "none",
+  borderRadius: 12,
   cursor: "pointer",
-  color: "#1B3A6B",
-  fontFamily: "Georgia, serif",
+  color: WARNA.putih,
+  fontFamily: FONT_BODY,
+  fontWeight: 700,
 };
 
-const btnExpandStyle = {
-  fontSize: 12,
-  padding: "6px 0",
-  background: "transparent",
-  border: "none",
-  color: "#1B3A6B",
-  cursor: "pointer",
-  fontFamily: "Georgia, serif",
-  textAlign: "left",
+const btnKembali = {
   width: "100%",
+  padding: "12px 0",
+  background: "rgba(255,255,255,0.15)",
+  color: WARNA.putih,
+  border: "none",
+  borderRadius: 16,
+  fontSize: 14,
+  fontWeight: 700,
+  cursor: "pointer",
+  fontFamily: FONT_BODY,
 };
