@@ -36,7 +36,6 @@ export default function App() {
   const [jawaban, setJawaban] = useState({});
   const [semuaResponden, setSemuaResponden] = useState([]);
   const [totalResponden, setTotalResponden] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [nomorResponden, setNomorResponden] = useState(null);
   const [golonganHasil, setGolonganHasil] = useState(null);
   const [error, setError] = useState(null);
@@ -44,6 +43,8 @@ export default function App() {
   const [nama, setNama] = useState("");
   const [errorNama, setErrorNama] = useState(null);
   const [namaTersimpan, setNamaTersimpan] = useState("");
+  const [sedangTransisi, setSedangTransisi] = useState(false);
+  const [namaTersimpanSementara, setNamaTersimpanSementara] = useState("");
 
   useEffect(() => {
     muatData();
@@ -92,23 +93,25 @@ export default function App() {
   }
 
   // Klik jawaban: simpan, lalu auto-advance ke soal berikutnya setelah jeda singkat
+  // sedangTransisi mengunci klik berikutnya agar spam-klik tidak menyebabkan lompat step
   function pilihJawaban(id, value) {
+    if (sedangTransisi) return;
+    setSedangTransisi(true);
     setJawaban((prev) => ({ ...prev, [id]: value }));
 
     setTimeout(() => {
       if (pertanyaanIndex < SEMUA_PERTANYAAN.length - 1) {
         setPertanyaanIndex((prev) => prev + 1);
         scrollKeAtas();
+        setSedangTransisi(false);
       } else {
-        setError(null);
-        setStep("isi-nama");
-        scrollKeAtas();
+        kirimSensus(namaTersimpanSementara);
       }
     }, 260);
   }
 
   function kembaliKeSoalSebelumnya() {
-    if (pertanyaanIndex > 0) {
+    if (pertanyaanIndex > 0 && !sedangTransisi) {
       setPertanyaanIndex((prev) => prev - 1);
       scrollKeAtas();
     }
@@ -121,11 +124,14 @@ export default function App() {
       return;
     }
     setErrorNama(null);
-    kirimSensus(nama.trim());
+    setNamaTersimpanSementara(nama.trim());
+    setPertanyaanIndex(0);
+    setStep("soal");
+    scrollKeAtas();
   }
 
   async function kirimSensus(namaFinal) {
-    setLoading(true);
+    setStep("loading");
     setError(null);
 
     const skorTotal = hitungSkorTotal(jawaban, BAGIAN);
@@ -138,6 +144,9 @@ export default function App() {
       rekomendasi: rekomendasiTerpilih,
     };
 
+    const waktuMulai = Date.now();
+    const JEDA_MINIMAL = 1400;
+
     const { error } = await supabase.from("sensus_responses").insert([
       {
         ...jawaban,
@@ -149,9 +158,15 @@ export default function App() {
       },
     ]);
 
+    const sisaWaktu = JEDA_MINIMAL - (Date.now() - waktuMulai);
+    if (sisaWaktu > 0) {
+      await new Promise((resolve) => setTimeout(resolve, sisaWaktu));
+    }
+
     if (error) {
       setError("Gagal mengirim data. Coba lagi ya.");
-      setLoading(false);
+      setStep("soal");
+      setSedangTransisi(false);
       return;
     }
 
@@ -159,7 +174,6 @@ export default function App() {
     setNomorResponden(totalResponden + 1);
     setGolonganHasil(golonganUntukDisimpan);
     setNamaTersimpan(namaFinal);
-    setLoading(false);
     setStep("submitted");
 
     try {
@@ -170,12 +184,6 @@ export default function App() {
     } catch (e) {
       // localStorage tidak tersedia, lewati saja
     }
-  }
-
-  function mulaiSensus() {
-    setPertanyaanIndex(0);
-    setStep("soal");
-    scrollKeAtas();
   }
 
   return (
@@ -196,7 +204,7 @@ export default function App() {
           <>
             <KopSurat />
             <Intro
-              onMulai={mulaiSensus}
+              onMulai={() => setStep("isi-nama")}
               jumlahResponden={totalResponden}
               sudahPernahIsi={sudahPernahIsi}
               golonganHasil={golonganHasil}
@@ -205,6 +213,15 @@ export default function App() {
               onLihatHasil={() => setStep("hasil")}
             />
           </>
+        )}
+
+        {step === "isi-nama" && (
+          <IsiNama
+            nama={nama}
+            setNama={setNama}
+            errorNama={errorNama}
+            onSubmit={submitNama}
+          />
         )}
 
         {step === "soal" && (
@@ -219,16 +236,7 @@ export default function App() {
           />
         )}
 
-        {step === "isi-nama" && (
-          <IsiNama
-            nama={nama}
-            setNama={setNama}
-            errorNama={errorNama}
-            onSubmit={submitNama}
-            loading={loading}
-            errorKirim={error}
-          />
-        )}
+        {step === "loading" && <LoadingHasil />}
 
         {step === "submitted" && (
           <Submitted
@@ -531,7 +539,7 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
   );
 }
 
-function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
+function IsiNama({ nama, setNama, errorNama, onSubmit }) {
   function handleChange(e) {
     const bersih = bersihkanInputNama(e.target.value);
     setNama(bersih);
@@ -552,14 +560,11 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
             textShadow: "0 2px 0 rgba(49,35,153,0.35)",
           }}
         >
-          Siapa nama kamu?
+          Siapa nama lo?
         </div>
       </div>
 
       <div style={kartuPutih}>
-        <div style={{ fontSize: 14, color: WARNA.teksAbu, marginBottom: 12, lineHeight: 1.5 }}>
-          Nama ini bakal muncul di hasil sensus dan bisa diliat responden lain.
-        </div>
         <input
           type="text"
           value={nama}
@@ -596,23 +601,58 @@ function IsiNama({ nama, setNama, errorNama, onSubmit, loading, errorKirim }) {
         )}
       </div>
 
-      {errorKirim && (
-        <div style={{ color: "#FFF", background: "#DC2626", borderRadius: 12, padding: "10px 14px", fontSize: 14, marginBottom: 12, textAlign: "center", fontWeight: 600 }}>
-          {errorKirim}
-        </div>
-      )}
-
       <button
         onClick={onSubmit}
-        disabled={loading || namaKosong}
+        disabled={namaKosong}
         style={{
           ...btnKuning,
           opacity: namaKosong ? 0.5 : 1,
-          cursor: loading || namaKosong ? "not-allowed" : "pointer",
+          cursor: namaKosong ? "not-allowed" : "pointer",
         }}
       >
-        {loading ? "Mengirim..." : "Lihat Hasil Sensus →"}
+        Lanjut ke 40 Soal →
       </button>
+    </div>
+  );
+}
+
+function LoadingHasil() {
+  return (
+    <div
+      style={{
+        minHeight: "60vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 56,
+          marginBottom: 18,
+          animation: "denyutHati 1s ease-in-out infinite",
+        }}
+      >
+        🔥
+      </div>
+      <div
+        style={{
+          fontSize: 17,
+          fontWeight: 700,
+          color: WARNA.putih,
+          fontFamily: FONT_DISPLAY,
+        }}
+      >
+        Menyusun hasil sensus lo...
+      </div>
+      <style>{`
+        @keyframes denyutHati {
+          0%, 100% { transform: scale(1); opacity: 0.85; }
+          50% { transform: scale(1.15); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
