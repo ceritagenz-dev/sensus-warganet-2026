@@ -425,6 +425,25 @@ function Intro({
       <button onClick={onMulai} style={btnKuning}>
         Mulai Sensus →
       </button>
+
+      <button
+        onClick={onLihatHasil}
+        style={{
+          width: "100%",
+          background: "none",
+          border: "none",
+          color: "rgba(255,255,255,0.85)",
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: "pointer",
+          marginTop: 14,
+          fontFamily: FONT_BODY,
+          textDecoration: "underline",
+          textUnderlineOffset: 3,
+        }}
+      >
+        Intip hasil orang lain dulu 👀
+      </button>
     </div>
   );
 }
@@ -764,10 +783,22 @@ function ShareButtons({ golonganHasil }) {
     window.open(url, "_blank");
   }
 
-  async function copyUntuk(platform) {
+  async function shareNative() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: teksShare });
+      } catch (e) {
+        // dibatalkan pengguna, abaikan
+      }
+    } else {
+      salinTeksLink();
+    }
+  }
+
+  async function salinTeksLink() {
     try {
       await navigator.clipboard.writeText(teksShare);
-      setSalinStatus(platform);
+      setSalinStatus("ok");
       setTimeout(() => setSalinStatus(null), 2500);
     } catch (e) {
       setSalinStatus("gagal");
@@ -788,33 +819,42 @@ function ShareButtons({ golonganHasil }) {
       >
         Bagikan hasil sensus lo
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 9 }}>
-        <button onClick={shareWhatsApp} style={btnShare("#25D366")}>
-          💬 WhatsApp
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 9, marginBottom: 9 }}>
+        <button onClick={shareNative} style={btnShareIkon("#E0639A")}>
+          <span style={{ fontSize: 20 }}>📲</span>
+          <span>Share</span>
         </button>
-        <button onClick={shareX} style={btnShare("#000000")}>
-          𝕏 Post
+        <button onClick={shareWhatsApp} style={btnShareIkon("#25D366")}>
+          <span style={{ fontSize: 20 }}>💬</span>
+          <span>WhatsApp</span>
         </button>
-        <button onClick={() => copyUntuk("TikTok")} style={btnShare(WARNA.putih, WARNA.primer)}>
-          🎵 Copy TikTok
-        </button>
-        <button onClick={() => copyUntuk("Instagram Story")} style={btnShare(WARNA.putih, WARNA.primer)}>
-          📸 Copy IG Story
+        <button onClick={shareX} style={btnShareIkon("#000000")}>
+          𝕏
+          <span>Post</span>
         </button>
       </div>
-      {salinStatus && (
-        <div
-          style={{
-            fontSize: 12,
-            color: WARNA.putih,
-            fontWeight: 700,
-            marginBottom: 8,
-            textAlign: "center",
-          }}
-        >
-          {salinStatus === "gagal" ? "Gagal menyalin, coba lagi." : `Tersalin! Tinggal paste di ${salinStatus}.`}
-        </div>
-      )}
+
+      <button
+        onClick={salinTeksLink}
+        style={{
+          width: "100%",
+          background: "transparent",
+          border: "none",
+          color: "rgba(255,255,255,0.85)",
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: "pointer",
+          fontFamily: FONT_BODY,
+          marginBottom: 12,
+          textDecoration: "underline",
+        }}
+      >
+        {salinStatus === "ok"
+          ? "Tersalin! Tinggal paste."
+          : salinStatus === "gagal"
+          ? "Gagal menyalin, coba lagi."
+          : "Atau salin teks & link"}
+      </button>
 
       <button
         onClick={() => window.open("https://x.com/ceritagenz", "_blank")}
@@ -838,10 +878,29 @@ function ShareButtons({ golonganHasil }) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
-        @ceritagenz
+        Follow @ceritagenz
       </button>
     </div>
   );
+}
+
+function btnShareIkon(bg) {
+  return {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    padding: "16px 0",
+    background: bg,
+    color: WARNA.putih,
+    border: "none",
+    borderRadius: 16,
+    fontSize: 12.5,
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: FONT_BODY,
+  };
 }
 
 function btnShare(bg, border) {
@@ -864,23 +923,23 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
 
   return (
     <div>
-      <div style={{ textAlign: "center", marginBottom: 6, position: "relative" }}>
-        <button
-          onClick={onKembali}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 8,
-            background: "none",
-            border: "none",
-            color: WARNA.putih,
-            fontWeight: 700,
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
-          ← Kembali
-        </button>
+      <button
+        onClick={onKembali}
+        style={{
+          background: "none",
+          border: "none",
+          color: WARNA.putih,
+          fontWeight: 700,
+          fontSize: 14,
+          cursor: "pointer",
+          display: "block",
+          marginBottom: 12,
+          padding: 0,
+        }}
+      >
+        ← Kembali
+      </button>
+      <div style={{ textAlign: "center", marginBottom: 6 }}>
         <div
           style={{
             fontSize: 26,
