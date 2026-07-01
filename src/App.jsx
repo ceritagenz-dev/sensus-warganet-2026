@@ -367,6 +367,26 @@ function Intro({
 
         {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
 
+        <button
+          onClick={() => window.open("https://lovegenz.vercel.app/", "_blank")}
+          style={{
+            width: "100%",
+            padding: "15px 0",
+            background: "linear-gradient(135deg, #C2185B, #E91E8C)",
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: 20,
+            fontSize: 15,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: FONT_DISPLAY,
+            marginBottom: 10,
+            boxShadow: "0 6px 16px rgba(194,24,91,0.35)",
+          }}
+        >
+          💘 Coba juga Sensus Bucin 2026 →
+        </button>
+
         <button onClick={onLihatHasil} style={btnPrimary}>
           Lihat hasil sensus warga lain
         </button>
@@ -728,6 +748,26 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
       )}
 
       {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
+
+      <button
+        onClick={() => window.open("https://lovegenz.vercel.app/", "_blank")}
+        style={{
+          width: "100%",
+          padding: "15px 0",
+          background: "linear-gradient(135deg, #C2185B, #E91E8C)",
+          color: "#FFFFFF",
+          border: "none",
+          borderRadius: 20,
+          fontSize: 15,
+          fontWeight: 800,
+          cursor: "pointer",
+          fontFamily: FONT_DISPLAY,
+          marginBottom: 10,
+          boxShadow: "0 6px 16px rgba(194,24,91,0.35)",
+        }}
+      >
+        💘 Coba juga Sensus Bucin 2026 →
+      </button>
 
       <button onClick={onLihatHasil} style={btnSecondary}>
         Lihat hasil sensus warga lain
