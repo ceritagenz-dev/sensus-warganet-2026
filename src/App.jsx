@@ -198,6 +198,10 @@ export default function App() {
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+        @keyframes pulseBucin {
+          0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(194,24,91,0.35); }
+          50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(194,24,91,0.55); }
+        }
       `}</style>
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
         {step === "intro" && (
@@ -382,6 +386,7 @@ function Intro({
             fontFamily: FONT_DISPLAY,
             marginBottom: 10,
             boxShadow: "0 6px 16px rgba(194,24,91,0.35)",
+            animation: "pulseBucin 2s ease-in-out infinite",
           }}
         >
           💘 Coba juga Sensus Bucin 2026 →
@@ -400,8 +405,8 @@ function Intro({
         <p style={{ lineHeight: 1.7, fontSize: 15, margin: 0, color: WARNA.teksGelap }}>
           Dengan ini, Badan Sensus Warganet menetapkan bahwa setiap warganet yang membuka
           tautan ini secara otomatis terdaftar sebagai responden wajib. Formulir terdiri dari{" "}
-          <strong>{TOTAL_PERTANYAAN} pertanyaan</strong> jujur-jujuran. Gak ada jawaban benar
-          atau salah, cuma ada jawaban yang bikin kamu mikir sendiri.
+          <strong>{TOTAL_PERTANYAAN} pertanyaan yang mungkin bakal bikin lo mempertanyakan hidup.</strong>{" "}
+          Gak ada jawaban benar atau salah, cuma ada jawaban yang bikin kamu mikir sendiri.
         </p>
         <p style={{ lineHeight: 1.7, fontSize: 15, marginTop: 12, marginBottom: 0, color: WARNA.teksGelap }}>
           Jawaban tidak diaudit siapa-siapa, tidak dijamin akurat, tapi dijamin jujur. Setiap
@@ -439,7 +444,18 @@ function Intro({
         }}
       >
         <span>🟢 SENSUS DIBUKA</span>
-        <span>{jumlahResponden} responden terdata</span>
+        <span
+          style={{
+            background: "rgba(255,255,255,0.18)",
+            padding: "5px 12px",
+            borderRadius: 12,
+            fontWeight: 800,
+            fontSize: 15,
+            color: WARNA.kuning,
+          }}
+        >
+          {jumlahResponden.toLocaleString()} responden terdata
+        </span>
       </div>
 
       <button onClick={onMulai} style={btnKuning}>
@@ -554,13 +570,14 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
                     borderRadius: "50%",
                     marginRight: 12,
                     fontWeight: 700,
-                    fontSize: 13,
+                    fontSize: aktif ? 16 : 13,
                     background: aktif ? WARNA.primer : WARNA.bgSoft,
                     color: aktif ? WARNA.putih : WARNA.primer,
                     flexShrink: 0,
+                    transition: "all 0.15s ease",
                   }}
                 >
-                  {huruf}
+                  {aktif ? "✓" : huruf}
                 </span>
                 {opsi}
               </button>
@@ -585,11 +602,12 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
   }
 
   const namaKosong = nama.trim().length === 0;
+  const terlalupanjang = nama.length >= MAX_NAMA;
 
   return (
     <div>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{ fontSize: 44, marginBottom: 8 }}>✍️</div>
+        <div style={{ fontSize: 44, marginBottom: 8 }}>👋</div>
         <div
           style={{
             fontSize: 26,
@@ -600,6 +618,9 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
           }}
         >
           Siapa nama lo?
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 8, fontWeight: 600 }}>
+          Nama samaran juga boleh, kok! Rahasia aman. 🤫
         </div>
       </div>
 
@@ -620,23 +641,29 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
             fontFamily: FONT_BODY,
             boxSizing: "border-box",
             outline: "none",
-            color: WARNA.teksGelap,
+            color: "#111111",
+            fontWeight: 600,
           }}
         />
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
+            alignItems: "center",
             fontSize: 12,
-            color: WARNA.teksAbu,
-            marginTop: 6,
+            marginTop: 8,
             fontWeight: 600,
           }}
         >
-          <span>{nama.length}/{MAX_NAMA}</span>
+          <span style={{ color: terlalupanjang ? "#DC2626" : "transparent" }}>
+            Nama terlalu panjang! 😅
+          </span>
+          <span style={{ color: terlalupanjang ? "#DC2626" : WARNA.teksAbu }}>
+            {nama.length}/{MAX_NAMA}
+          </span>
         </div>
         {errorNama && (
-          <div style={{ color: "#DC2626", fontSize: 13, marginTop: 6, fontWeight: 600 }}>{errorNama}</div>
+          <div style={{ color: "#DC2626", fontSize: 13, marginTop: 4, fontWeight: 600 }}>{errorNama}</div>
         )}
       </div>
 
@@ -644,9 +671,20 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
         onClick={onSubmit}
         disabled={namaKosong}
         style={{
-          ...btnKuning,
-          opacity: namaKosong ? 0.5 : 1,
+          width: "100%",
+          padding: "16px 0",
+          background: namaKosong
+            ? "rgba(255,255,255,0.2)"
+            : `linear-gradient(135deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
+          color: namaKosong ? "rgba(255,255,255,0.4)" : WARNA.primerGelap,
+          border: "none",
+          borderRadius: 20,
+          fontSize: 16,
+          fontWeight: 800,
           cursor: namaKosong ? "not-allowed" : "pointer",
+          fontFamily: FONT_DISPLAY,
+          boxShadow: namaKosong ? "none" : "0 6px 16px rgba(0,0,0,0.18)",
+          transition: "all 0.2s ease",
         }}
       >
         Lanjut ke 40 Soal →
@@ -1154,11 +1192,11 @@ function optionStyle(aktif) {
     display: "flex",
     alignItems: "center",
     textAlign: "left",
-    padding: "13px 14px",
+    padding: "14px 16px",
     borderRadius: 16,
-    border: aktif ? `2px solid ${WARNA.primer}` : `2px solid ${WARNA.garis}`,
+    border: aktif ? `2.5px solid ${WARNA.primer}` : `2px solid ${WARNA.garis}`,
     background: aktif ? WARNA.bgSoft : WARNA.putih,
-    color: WARNA.teksGelap,
+    color: aktif ? WARNA.primerGelap : "#111111",
     fontWeight: aktif ? 700 : 500,
     fontSize: 15,
     cursor: "pointer",
@@ -1166,6 +1204,7 @@ function optionStyle(aktif) {
     width: "100%",
     lineHeight: 1.4,
     transition: "all 0.15s ease",
+    boxShadow: aktif ? `0 0 0 3px rgba(67,56,202,0.15)` : "none",
   };
 }
 
