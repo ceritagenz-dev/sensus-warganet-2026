@@ -23,7 +23,7 @@ const FONT_DISPLAY = "'Baloo 2', 'Fredoka', system-ui, sans-serif";
 const FONT_BODY = "'Quicksand', system-ui, -apple-system, sans-serif";
 
 const gradientBg =
-  "linear-gradient(160deg, #4338CA 0%, #5A47D6 35%, #6D5CE7 70%, #8B7CF0 100%)";
+  "linear-gradient(160deg, #3730A3 0%, #4338CA 30%, #5B4FD4 60%, #6D5CE7 85%, #7C6FF0 100%)";
 
 // Daftar flat semua 40 pertanyaan, dengan referensi bagian asalnya
 const SEMUA_PERTANYAAN = BAGIAN.flatMap((bagian) =>
@@ -145,7 +145,7 @@ export default function App() {
     };
 
     const waktuMulai = Date.now();
-    const JEDA_MINIMAL = 1400;
+    const JEDA_MINIMAL = 2000;
 
     const { error } = await supabase.from("sensus_responses").insert([
       {
@@ -202,8 +202,23 @@ export default function App() {
           0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(194,24,91,0.35); }
           50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(194,24,91,0.55); }
         }
+        @keyframes floatShape {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
+          50% { transform: translateY(-20px) rotate(8deg); opacity: 0.1; }
+        }
+        .bg-shape {
+          position: fixed;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 0;
+          animation: floatShape 8s ease-in-out infinite;
+        }
       `}</style>
-      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+      {/* Decorative background shapes */}
+      <div className="bg-shape" style={{ width: 280, height: 280, background: "#7C6FF0", top: -80, right: -80, animationDelay: "0s" }} />
+      <div className="bg-shape" style={{ width: 200, height: 200, background: "#FBBF24", bottom: 100, left: -60, animationDelay: "3s" }} />
+      <div className="bg-shape" style={{ width: 120, height: 120, background: "#A78BFA", top: "40%", right: -30, animationDelay: "5s" }} />
+      <div style={{ maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {step === "intro" && (
           <>
             <KopSurat />
@@ -484,8 +499,28 @@ function Intro({
   );
 }
 
+const QUOTES_SOAL = [
+  "Tenang, dikit lagi kok! 🙃",
+  "Ini ujian... tapi lebih seru dari sekolah.",
+  "Jujur aja, gak ada yang ngejudge. (kecuali algoritmanya)",
+  "Napas dulu, baru jawab.",
+  "Santai, ini bukan tes psikologi... atau iya?",
+  "Data lo aman. Mungkin.",
+  "Jawab jujur biar hasilnya akurat. Katanya.",
+  "Udah setengah jalan, sayang kalau berhenti.",
+  "Badan Sensus Warganet mengawasi. 👁️",
+  "Pilih yang paling bikin lo gelisah tengah malam.",
+  "Gak ada jawaban salah. Cuma ada jawaban yang ngena.",
+  "Lo udah lebih jujur dari debat calon presiden.",
+  "Hampir sampai, warganet sejati!",
+  "Data lo dijamin aman. (terms & conditions apply)",
+  "Ini lebih singkat dari antrean BPJS.",
+];
+
 function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPilih, onKembali, bisaKembali }) {
   const persen = Math.round((nomorSoal / totalSoal) * 100);
+  const sisaSoal = totalSoal - nomorSoal;
+  const quoteIdx = (nomorSoal - 1) % QUOTES_SOAL.length;
 
   return (
     <div>
@@ -584,6 +619,39 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
             );
           })}
         </div>
+      </div>
+
+      {/* Quote humor + indikator sisa soal */}
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: 14,
+          padding: "0 8px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            color: "rgba(255,255,255,0.7)",
+            fontWeight: 600,
+            marginBottom: 4,
+            fontFamily: FONT_BODY,
+            fontStyle: "italic",
+          }}
+        >
+          {QUOTES_SOAL[quoteIdx]}
+        </div>
+        {sisaSoal > 0 && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.5)",
+              fontWeight: 600,
+            }}
+          >
+            Masih ada {sisaSoal} pertanyaan lagi sebelum tau golongan lo!
+          </div>
+        )}
       </div>
 
       {bisaKembali && (
@@ -694,37 +762,120 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
 }
 
 function LoadingHasil() {
+  const TEKS_LOADING = [
+    "Menyusun hasil sensus lo...",
+    "Lagi ngecek database rahasia negara...",
+    "Lagi ngitung tingkat kewarasan lo...",
+    "Sabar ya, lagi disiapin sertifikat keren lo!",
+    "Konsultasi dulu sama Badan Sensus Pusat...",
+    "Lagi verifikasi data ke RT/RW setempat...",
+    "Ngitung ulang biar hasilnya akurat (katanya)...",
+    "Bentar, lagi minta tanda tangan pejabat dulu...",
+  ];
+
+  const [teksIdx, setTeksIdx] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Ganti teks tiap 600ms
+    const intervalTeks = setInterval(() => {
+      setTeksIdx((prev) => (prev + 1) % TEKS_LOADING.length);
+    }, 650);
+
+    // Progress bar fake: naik pelan ke 90%, lalu lompat ke 100% pas selesai
+    let p = 0;
+    const intervalProgress = setInterval(() => {
+      p += Math.random() * 8 + 3;
+      if (p >= 92) {
+        p = 92;
+        clearInterval(intervalProgress);
+      }
+      setProgress(Math.min(p, 92));
+    }, 120);
+
+    return () => {
+      clearInterval(intervalTeks);
+      clearInterval(intervalProgress);
+    };
+  }, []);
+
   return (
     <div
       style={{
-        minHeight: "60vh",
+        minHeight: "70vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
+        padding: "0 20px",
       }}
     >
       <div
         style={{
-          fontSize: 56,
-          marginBottom: 18,
-          animation: "denyutHati 1s ease-in-out infinite",
+          fontSize: 64,
+          marginBottom: 20,
+          animation: "denyutApi 0.8s ease-in-out infinite",
+          display: "inline-block",
         }}
       >
         🔥
       </div>
+
       <div
         style={{
           fontSize: 17,
           fontWeight: 700,
           color: WARNA.putih,
           fontFamily: FONT_DISPLAY,
+          marginBottom: 28,
+          minHeight: 52,
+          lineHeight: 1.5,
+          transition: "opacity 0.3s ease",
         }}
       >
-        Menyusun hasil sensus lo...
+        {TEKS_LOADING[teksIdx]}
       </div>
+
+      {/* Fake progress bar */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 300,
+          height: 8,
+          background: "rgba(255,255,255,0.2)",
+          borderRadius: 8,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
+            borderRadius: 8,
+            transition: "width 0.2s ease",
+          }}
+        />
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          color: "rgba(255,255,255,0.6)",
+          marginTop: 8,
+          fontWeight: 600,
+          fontFamily: FONT_BODY,
+        }}
+      >
+        {Math.round(progress)}%
+      </div>
+
       <style>{`
+        @keyframes denyutApi {
+          0%, 100% { transform: scale(1) rotate(-3deg); }
+          25% { transform: scale(1.12) rotate(3deg); }
+          75% { transform: scale(0.95) rotate(-2deg); }
+        }
         @keyframes denyutHati {
           0%, 100% { transform: scale(1); opacity: 0.85; }
           50% { transform: scale(1.15); opacity: 1; }
