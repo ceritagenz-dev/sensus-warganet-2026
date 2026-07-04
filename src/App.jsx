@@ -200,7 +200,11 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
         @keyframes pulseBucin {
           0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(194,24,91,0.35); }
-          50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(194,24,91,0.55); }
+          50% { transform: scale(1.02); box-shadow: 0 10px 28px rgba(194,24,91,0.6); }
+        }
+        @keyframes pulseMultai {
+          0%, 100% { box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+          50% { box-shadow: 0 8px 28px rgba(251,191,36,0.55), 0 0 0 6px rgba(251,191,36,0.12); }
         }
         @keyframes floatShape {
           0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
@@ -332,8 +336,12 @@ function Intro({
         <div style={kartuPutih}>
           <BadgePita teks="SUDAH TERCATAT" warna={WARNA.teksAbu} />
           <p style={{ lineHeight: 1.7, fontSize: 15, margin: "14px 0 0", color: WARNA.teksGelap }}>
-            Kamu sudah pernah mengisi sensus ini dari perangkat ini. Setiap warganet hanya
-            bisa disensus satu kali biar datanya tetap valid.
+            Data lo udah aman di database kami. Jangan capek-capek coba isi lagi ya —
+            sistem kami lebih konsisten dari resolusi tahun baru lo.
+          </p>
+          <p style={{ lineHeight: 1.7, fontSize: 13, margin: "8px 0 0", color: WARNA.teksAbu }}>
+            Tapi tenang, hasil sensus lo masih bisa dibagikan dan dilihat di sini. Bukan berarti
+            lo harus move on dari golongan lo. 😌
           </p>
 
           {golonganHasil && (
@@ -473,7 +481,10 @@ function Intro({
         </span>
       </div>
 
-      <button onClick={onMulai} style={btnKuning}>
+      <button
+        onClick={onMulai}
+        style={{ ...btnKuning, animation: "pulseMultai 2.5s ease-in-out infinite" }}
+      >
         Mulai Sensus →
       </button>
 
@@ -499,28 +510,300 @@ function Intro({
   );
 }
 
-const QUOTES_SOAL = [
-  "Tenang, dikit lagi kok! 🙃",
-  "Ini ujian... tapi lebih seru dari sekolah.",
-  "Jujur aja, gak ada yang ngejudge. (kecuali algoritmanya)",
-  "Napas dulu, baru jawab.",
-  "Santai, ini bukan tes psikologi... atau iya?",
-  "Data lo aman. Mungkin.",
-  "Jawab jujur biar hasilnya akurat. Katanya.",
-  "Udah setengah jalan, sayang kalau berhenti.",
-  "Badan Sensus Warganet mengawasi. 👁️",
-  "Pilih yang paling bikin lo gelisah tengah malam.",
-  "Gak ada jawaban salah. Cuma ada jawaban yang ngena.",
-  "Lo udah lebih jujur dari debat calon presiden.",
-  "Hampir sampai, warganet sejati!",
-  "Data lo dijamin aman. (terms & conditions apply)",
-  "Ini lebih singkat dari antrean BPJS.",
-];
+// 200 quotes: 5 variasi per soal (40 soal × 5), dipilih random tiap render
+// Setiap variasi disesuaikan konteks "masih ada X soal lagi"
+const QUOTES_PER_SOAL = {
+  // soal ke-1, masih ada 39 soal lagi
+  1: [
+    "Masih ada 39 lagi... tapi yang berat itu mulai, bukan lanjut.",
+    "Masih ada 39 lagi... santai, ini lebih cepat dari mikirin masa depan.",
+    "Masih ada 39 lagi... lo baru masuk, belum ada alasan nyerah.",
+    "Masih ada 39 lagi... anggap aja pemanasan sebelum overthinking.",
+    "Masih ada 39 lagi... jalan dulu, ngeluh belakangan.",
+  ],
+  2: [
+    "Masih ada 38 lagi... belum ada yang tau lo lagi ngapain ini.",
+    "Masih ada 38 lagi... masih aman, masih bisa balik kanan.",
+    "Masih ada 38 lagi... ini soal gampang, yang susah nanti.",
+    "Masih ada 38 lagi... badan sensus apresiasi kehadiran lo.",
+    "Masih ada 38 lagi... napas dulu, baru scroll.",
+  ],
+  3: [
+    "Masih ada 37 lagi... mulai ngerasa terlibat? Bagus.",
+    "Masih ada 37 lagi... lo udah lebih rajin dari kebanyakan warganet.",
+    "Masih ada 37 lagi... jujur aja, gak ada yang ngejudge selain algoritmanya.",
+    "Masih ada 37 lagi... di titik ini biasanya orang mulai jujur.",
+    "Masih ada 37 lagi... data lo aman. Mungkin.",
+  ],
+  4: [
+    "Masih ada 36 lagi... ini bukan SBMPTN, lo boleh santai.",
+    "Masih ada 36 lagi... jawab yang paling bikin lo senyum sendiri.",
+    "Masih ada 36 lagi... gak ada nilai merah di sini.",
+    "Masih ada 36 lagi... udah 10% jalan, lumayan.",
+    "Masih ada 36 lagi... pilihannya banyak, tapi hati lo tau jawabannya.",
+  ],
+  5: [
+    "Masih ada 35 lagi... tarik napas, buang beban hidup.",
+    "Masih ada 35 lagi... sejauh ini lo masih lebih konsisten dari resolusi tahun baru.",
+    "Masih ada 35 lagi... sepertiga pertama selalu yang paling berat.",
+    "Masih ada 35 lagi... badan sensus mencatat setiap jawaban lo dengan hormat.",
+    "Masih ada 35 lagi... soal-soal ke depan makin seru, janji.",
+  ],
+  6: [
+    "Masih ada 34 lagi... lo udah investasi waktu di sini, rugi kalau berhenti.",
+    "Masih ada 34 lagi... jawab yang paling bikin lo mikir dua kali.",
+    "Masih ada 34 lagi... pertanyaan ini mungkin akan muncul di benak lo nanti malam.",
+    "Masih ada 34 lagi... gak ada jawaban yang salah. Cuma ada yang mengejutkan.",
+    "Masih ada 34 lagi... santai, ini lebih singkat dari antrean BPJS.",
+  ],
+  7: [
+    "Masih ada 33 lagi... udah hampir seperlima, lo serius ini.",
+    "Masih ada 33 lagi... Badan Sensus Warganet mulai kenal lo. 👁️",
+    "Masih ada 33 lagi... pilih yang paling lo relate, bukan yang paling keren.",
+    "Masih ada 33 lagi... kalau mulai bingung, berarti lo lagi jujur.",
+    "Masih ada 33 lagi... jangan mikir terlalu lama, insting pertama biasanya benar.",
+  ],
+  8: [
+    "Masih ada 32 lagi... lo udah lebih tekun dari tugas kuliah yang ditunda.",
+    "Masih ada 32 lagi... mulai ngerti pola pertanyaannya? Bagus.",
+    "Masih ada 32 lagi... ini soal biasa, yang spicy datang belakangan.",
+    "Masih ada 32 lagi... data lo mulai terbentuk. Penasaran hasilnya?",
+    "Masih ada 32 lagi... sejauh ini lo masih aman dari golongan terendah. Mungkin.",
+  ],
+  9: [
+    "Masih ada 31 lagi... hampir sepertiga jalan, warganet sejati.",
+    "Masih ada 31 lagi... algoritma sensus mulai mengenali pola hidup lo.",
+    "Masih ada 31 lagi... jawab jujur biar hasilnya akurat. Katanya.",
+    "Masih ada 31 lagi... udah hampir 25%, lo konsisten banget.",
+    "Masih ada 31 lagi... soal selanjutnya mungkin bikin lo senyum sendiri.",
+  ],
+  10: [
+    "Masih ada 30 lagi... udah mulai nyesel ikutan ini? Lanjutin!",
+    "Masih ada 30 lagi... pas di 25%! Lo termasuk warganet yang niat.",
+    "Masih ada 30 lagi... sepertiga jalan sudah terlewat, sayang kalau berhenti.",
+    "Masih ada 30 lagi... napas dulu, kita masih setengah perjalanan lagi.",
+    "Masih ada 30 lagi... lo lebih jujur dari politisi manapun di titik ini.",
+  ],
+  11: [
+    "Masih ada 29 lagi... momentum sudah ada, jangan dibuang.",
+    "Masih ada 29 lagi... di sini biasanya orang mulai overthinking pilihan.",
+    "Masih ada 29 lagi... percaya insting pertama lo, biasanya itu yang benar.",
+    "Masih ada 29 lagi... lo sudah buktiin lo lebih sabar dari rata-rata.",
+    "Masih ada 29 lagi... Badan Sensus mengapresiasi kesabaran lo.",
+  ],
+  12: [
+    "Masih ada 28 lagi... jawab santai, ini bukan ujian nasional.",
+    "Masih ada 28 lagi... setiap jawaban lo membentuk profil warganet yang unik.",
+    "Masih ada 28 lagi... hampir sepertiga, good job!",
+    "Masih ada 28 lagi... lo lebih tekun dari kebanyakan orang yang buka link ini.",
+    "Masih ada 28 lagi... pertanyaan-pertanyaan ini sengaja dibuat relatable.",
+  ],
+  13: [
+    "Masih ada 27 lagi... sepertiga jalan lebih, momentum bagus.",
+    "Masih ada 27 lagi... di titik ini biasanya orang mulai ketawa sendiri.",
+    "Masih ada 27 lagi... jawab yang paling bikin lo gelisah tengah malam.",
+    "Masih ada 27 lagi... gak ada yang mengawasi. Kecuali badan sensus.",
+    "Masih ada 27 lagi... lo sudah lebih jujur dari rata-rata warganet.",
+  ],
+  14: [
+    "Masih ada 26 lagi... hampir 40% selesai, lo serius nih.",
+    "Masih ada 26 lagi... pilih yang paling lo lakuin tanpa mikir panjang.",
+    "Masih ada 26 lagi... semua jawaban valid. Yang gak valid itu nge-skip.",
+    "Masih ada 26 lagi... insting lo lebih jujur dari otak lo di titik ini.",
+    "Masih ada 26 lagi... lo masih di jalur yang benar, terus jalan.",
+  ],
+  15: [
+    "Masih ada 25 lagi... sumpah, gue juga capek nulisin teks ini.",
+    "Masih ada 25 lagi... pas di tengah! Lo udah setengah jalan.",
+    "Masih ada 25 lagi... kalau capek, anggap ini meditasi berkedok sensus.",
+    "Masih ada 25 lagi... hampir 40%! Lo lebih niat dari yang gue kira.",
+    "Masih ada 25 lagi... setengah perjalanan menuju golongan lo.",
+  ],
+  16: [
+    "Masih ada 24 lagi... lo sudah melewati titik balik. Pantang mundur.",
+    "Masih ada 24 lagi... bagian ini mulai masuk ke pertanyaan yang lebih personal.",
+    "Masih ada 24 lagi... jawab dengan hati, bukan ekspektasi.",
+    "Masih ada 24 lagi... Badan Sensus mulai punya gambaran soal lo.",
+    "Masih ada 24 lagi... lo lebih konsisten dari Wi-Fi kantor.",
+  ],
+  17: [
+    "Masih ada 23 lagi... hampir 60%! Makin sedikit, makin seru.",
+    "Masih ada 23 lagi... di sini pertanyaannya mulai agak nyelekit.",
+    "Masih ada 23 lagi... kalau mulai senyum sendiri, itu tanda lo jujur.",
+    "Masih ada 23 lagi... soal-soal berikutnya yang paling bikin mikir.",
+    "Masih ada 23 lagi... lo sudah investasi terlalu banyak buat berhenti.",
+  ],
+  18: [
+    "Masih ada 22 lagi... hampir 60%! Ini bukan lagi zona santai.",
+    "Masih ada 22 lagi... jawaban lo mulai membentuk pola yang menarik.",
+    "Masih ada 22 lagi... gak ada yang tau jawaban lo kecuali lo sendiri (dan servernya).",
+    "Masih ada 22 lagi... di titik ini biasanya orang mulai lebih jujur.",
+    "Masih ada 22 lagi... setengah lebih jalan, warganet tangguh.",
+  ],
+  19: [
+    "Masih ada 21 lagi... hampir setengah lebih selesai!",
+    "Masih ada 21 lagi... napas dulu, ini maraton bukan sprint.",
+    "Masih ada 21 lagi... jawab yang paling lo rasain beneran, bukan yang keliatan keren.",
+    "Masih ada 21 lagi... lo lebih sabar dari kebanyakan orang.",
+    "Masih ada 21 lagi... sedikit lagi melewati zona terberat.",
+  ],
+  20: [
+    "Masih ada 20 lagi... tuh kan, makin lama makin susah.",
+    "Masih ada 20 lagi... tepat di setengah jalan! Ini titik kritis.",
+    "Masih ada 20 lagi... kalau berhenti di sini, golongan lo gak akan ketauan.",
+    "Masih ada 20 lagi... 20 soal lagi buat dapetin gelar warganet lo.",
+    "Masih ada 20 lagi... orang-orang yang beneran kepo sama hasilnya pasti lanjut.",
+  ],
+  21: [
+    "Masih ada 19 lagi... udah lewat setengah! Downhill dari sini.",
+    "Masih ada 19 lagi... sisanya lebih seru, janji.",
+    "Masih ada 19 lagi... lo udah buktiin lo lebih sabar dari mayoritas.",
+    "Masih ada 19 lagi... Badan Sensus semakin paham siapa lo sebenarnya.",
+    "Masih ada 19 lagi... jawab santai, yang penting jujur.",
+  ],
+  22: [
+    "Masih ada 18 lagi... hampir 50%! Lo beneran niat ini.",
+    "Masih ada 18 lagi... pertanyaan berikutnya mulai masuk ke zona finansial.",
+    "Masih ada 18 lagi... jawab yang paling lo relate, bukan yang paling ideal.",
+    "Masih ada 18 lagi... setiap soal membawa lo makin dekat ke golongan lo.",
+    "Masih ada 18 lagi... lo lebih konsisten dari jadwal tidur lo sendiri.",
+  ],
+  23: [
+    "Masih ada 17 lagi... sudah lebih dari setengah, momentum ada di pihak lo.",
+    "Masih ada 17 lagi... bagian finansial ini biasanya bikin orang diem sebentar.",
+    "Masih ada 17 lagi... gak usah pura-pura sultan kalau emang bukan.",
+    "Masih ada 17 lagi... jawab yang paling real, bukan yang paling kelihatan bagus.",
+    "Masih ada 17 lagi... Badan Sensus gak menghakimi. Hasilnya yang menghakimi.",
+  ],
+  24: [
+    "Masih ada 16 lagi... hampir 40% jalan lagi, hampir finish!",
+    "Masih ada 16 lagi... lo lebih kuat dari yang lo kira.",
+    "Masih ada 16 lagi... jawab yang paling jujur, bukan yang paling aman.",
+    "Masih ada 16 lagi... di titik ini, jawaban lo mulai lebih konsisten.",
+    "Masih ada 16 lagi... pertanyaan-pertanyaan terakhir biasanya yang paling revealing.",
+  ],
+  25: [
+    "Masih ada 15 lagi... dikit lagi, tahan emosinya.",
+    "Masih ada 15 lagi... 15 soal terakhir ini yang paling seru.",
+    "Masih ada 15 lagi... lo sudah melewati 62.5% perjalanan!",
+    "Masih ada 15 lagi... napas, jawab, lanjut. Lo bisa.",
+    "Masih ada 15 lagi... hampir sampai ke bagian yang paling kepo.",
+  ],
+  26: [
+    "Masih ada 14 lagi... dua pertiga lebih selesai! Keren.",
+    "Masih ada 14 lagi... lo udah jawab lebih banyak soal dari yang kabur.",
+    "Masih ada 14 lagi... jawab yang paling lo lakuin tanpa bilang ke siapa-siapa.",
+    "Masih ada 14 lagi... Badan Sensus bangga sama ketahanan lo.",
+    "Masih ada 14 lagi... pertanyaan selanjutnya mungkin bikin lo senyum awkward.",
+  ],
+  27: [
+    "Masih ada 13 lagi... mulai kelihatan ujung terowongannya.",
+    "Masih ada 13 lagi... 13 soal lagi buat dapetin gelar resmi lo.",
+    "Masih ada 13 lagi... di sini biasanya orang mulai jawab lebih cepat.",
+    "Masih ada 13 lagi... lo sudah terlalu jauh buat berhenti sekarang.",
+    "Masih ada 13 lagi... hampir di zona finish warganet!",
+  ],
+  28: [
+    "Masih ada 12 lagi... 30% sisa, almost there!",
+    "Masih ada 12 lagi... 12 pertanyaan lagi dan lo jadi warganet resmi.",
+    "Masih ada 12 lagi... napas terakhir sebelum zona akhir.",
+    "Masih ada 12 lagi... lo lebih gigih dari target diet orang lain.",
+    "Masih ada 12 lagi... jangan mulai males sekarang, tanggung.",
+  ],
+  29: [
+    "Masih ada 11 lagi... hampir selesai! Ini bukan saatnya menyerah.",
+    "Masih ada 11 lagi... 11 soal lagi, kurang dari seperempat total.",
+    "Masih ada 11 lagi... jawab yang paling bikin lo ketawa sendiri.",
+    "Masih ada 11 lagi... Badan Sensus sudah siapkan sertifikat lo.",
+    "Masih ada 11 lagi... lo udah lebih jauh dari 90% orang yang buka link ini.",
+  ],
+  30: [
+    "Masih ada 10 lagi... oke, lo beneran orang sabar.",
+    "Masih ada 10 lagi... 10 soal lagi! Dua digit terakhir.",
+    "Masih ada 10 lagi... sisa 25%, gak ada alasan berhenti.",
+    "Masih ada 10 lagi... zona finish sudah kelihatan!",
+    "Masih ada 10 lagi... 10 pertanyaan terakhir yang paling jujur.",
+  ],
+  31: [
+    "Masih ada 9 lagi... single digit! Lo hampir sampai.",
+    "Masih ada 9 lagi... 9 pertanyaan lagi buat jadi warganet resmi.",
+    "Masih ada 9 lagi... jawab santai, golongan lo sudah 75% terbentuk.",
+    "Masih ada 9 lagi... Badan Sensus sudah tau banyak soal lo.",
+    "Masih ada 9 lagi... semangat, tinggal dikit lagi!",
+  ],
+  32: [
+    "Masih ada 8 lagi... hampir finish! Lo luar biasa.",
+    "Masih ada 8 lagi... 8 soal terakhir, jawab yang paling jujur.",
+    "Masih ada 8 lagi... ini bagian terakhir yang paling revealing.",
+    "Masih ada 8 lagi... golongan lo hampir ketauan.",
+    "Masih ada 8 lagi... tinggal 20%! Gak ada yang berhenti di sini.",
+  ],
+  33: [
+    "Masih ada 7 lagi... 7 soal lagi! Lo hampir resmi jadi warganet terklasifikasi.",
+    "Masih ada 7 lagi... jawab yang paling lo rasain beneran.",
+    "Masih ada 7 lagi... pertanyaan terakhir selalu yang paling bikin mikir.",
+    "Masih ada 7 lagi... Badan Sensus sudah hampir bisa kasih gelar lo.",
+    "Masih ada 7 lagi... tinggal dikit, jangan nyerah tanggung.",
+  ],
+  34: [
+    "Masih ada 6 lagi... 6 soal lagi! Sudah kelihatan finish line-nya.",
+    "Masih ada 6 lagi... hampir selesai, hasil lo sudah hampir final.",
+    "Masih ada 6 lagi... jawab yang paling bikin lo mikir sebentar.",
+    "Masih ada 6 lagi... lo sudah lebih jauh dari yang lo kira.",
+    "Masih ada 6 lagi... Badan Sensus sudah siapkan hasilnya.",
+  ],
+  35: [
+    "Masih ada 5 lagi... akhirnya, bentar lagi dapet gelar!",
+    "Masih ada 5 lagi... 5 soal lagi! Lo hampir jadi warganet resmi terklasifikasi.",
+    "Masih ada 5 lagi... 87.5% selesai, hampir!",
+    "Masih ada 5 lagi... napas, jawab, tinggal sebentar lagi.",
+    "Masih ada 5 lagi... golongan lo sudah 90% terbentuk.",
+  ],
+  36: [
+    "Masih ada 4 lagi... 4 soal lagi! Lo udah hampir lulus sensus.",
+    "Masih ada 4 lagi... tinggal 10%, jangan berhenti sekarang.",
+    "Masih ada 4 lagi... Badan Sensus siap umumkan hasilmu.",
+    "Masih ada 4 lagi... jawab yang paling jujur, ini penentuan akhir.",
+    "Masih ada 4 lagi... hampir selesai, golongan lo sebentar lagi ketauan!",
+  ],
+  37: [
+    "Masih ada 3 lagi... tiga soal terakhir! Ini yang paling penting.",
+    "Masih ada 3 lagi... 3 pertanyaan lagi menuju gelar resmi.",
+    "Masih ada 3 lagi... hampir 93% selesai! Lo keren banget.",
+    "Masih ada 3 lagi... jawab yang paling jujur dari semua yang sebelumnya.",
+    "Masih ada 3 lagi... Badan Sensus sudah hampir siap umumkan hasilnya.",
+  ],
+  38: [
+    "Masih ada 2 lagi... dua soal terakhir! Sudah hampir sampai.",
+    "Masih ada 2 lagi... 2 pertanyaan lagi, lo hampir resmi terklasifikasi.",
+    "Masih ada 2 lagi... hampir 95% selesai! Jangan berhenti sekarang.",
+    "Masih ada 2 lagi... jawab jujur, ini yang terakhir-terakhir.",
+    "Masih ada 2 lagi... golongan lo sudah hampir final!",
+  ],
+  39: [
+    "Masih ada 1 lagi... satu soal terakhir! Lo hampir resmi.",
+    "Masih ada 1 lagi... hela napas terakhir, ini yang paling akhir.",
+    "Masih ada 1 lagi... 97.5% selesai! Satu langkah lagi.",
+    "Masih ada 1 lagi... jawab yang paling jujur, ini penutup.",
+    "Masih ada 1 lagi... habis ini golongan lo langsung ketauan!",
+  ],
+  40: [
+    "Ini soal terakhir! Jawab dengan sepenuh hati.",
+    "Soal ke-40! Lo berhasil sampai di sini, luar biasa.",
+    "Terakhir! Satu jawaban lagi menuju gelar warganet resmi lo.",
+    "Ini dia, soal penutup! Jawab jujur, ini yang menentukan.",
+    "Soal terakhir! Hela napas, ini yang paling akhir dari semuanya.",
+  ],
+};
+
+function getQuoteSoal(nomorSoal) {
+  const opsi = QUOTES_PER_SOAL[nomorSoal] || QUOTES_PER_SOAL[1];
+  return opsi[Math.floor(Math.random() * opsi.length)];
+}
 
 function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPilih, onKembali, bisaKembali }) {
   const persen = Math.round((nomorSoal / totalSoal) * 100);
-  const sisaSoal = totalSoal - nomorSoal;
-  const quoteIdx = (nomorSoal - 1) % QUOTES_SOAL.length;
+  const [quote] = useState(() => getQuoteSoal(nomorSoal));
 
   return (
     <div>
@@ -621,37 +904,19 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
         </div>
       </div>
 
-      {/* Quote humor + indikator sisa soal */}
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: 14,
-          padding: "0 8px",
-        }}
-      >
+      {/* Quote humor per soal */}
+      <div style={{ textAlign: "center", marginBottom: 14, padding: "0 8px" }}>
         <div
           style={{
             fontSize: 13,
-            color: "rgba(255,255,255,0.7)",
+            color: "rgba(255,255,255,0.72)",
             fontWeight: 600,
-            marginBottom: 4,
             fontFamily: FONT_BODY,
             fontStyle: "italic",
           }}
         >
-          {QUOTES_SOAL[quoteIdx]}
+          {quote}
         </div>
-        {sisaSoal > 0 && (
-          <div
-            style={{
-              fontSize: 12,
-              color: "rgba(255,255,255,0.5)",
-              fontWeight: 600,
-            }}
-          >
-            Masih ada {sisaSoal} pertanyaan lagi sebelum tau golongan lo!
-          </div>
-        )}
       </div>
 
       {bisaKembali && (
@@ -697,7 +962,7 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
           type="text"
           value={nama}
           onChange={handleChange}
-          placeholder="Nama / nickname kamu"
+          placeholder="Panggil lo siapa nih?"
           maxLength={MAX_NAMA}
           autoFocus
           style={{
