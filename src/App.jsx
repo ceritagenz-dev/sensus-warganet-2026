@@ -210,12 +210,31 @@ export default function App() {
           0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
           50% { transform: translateY(-20px) rotate(8deg); opacity: 0.1; }
         }
+        @keyframes shimmerGolongan {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes heartbeat {
+          0%, 100% { transform: scale(1); }
+          15% { transform: scale(1.25); }
+          30% { transform: scale(1); }
+          45% { transform: scale(1.15); }
+          60% { transform: scale(1); }
+        }
         .bg-shape {
           position: fixed;
           border-radius: 50%;
           pointer-events: none;
           z-index: 0;
           animation: floatShape 8s ease-in-out infinite;
+        }
+        .golongan-shimmer {
+          background: linear-gradient(90deg, #4338CA 25%, #8B7CF0 50%, #4338CA 75%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmerGolongan 3s linear infinite;
         }
       `}</style>
       {/* Decorative background shapes */}
@@ -249,6 +268,7 @@ export default function App() {
 
         {step === "soal" && (
           <SoalTunggal
+            key={pertanyaanIndex}
             pertanyaan={SEMUA_PERTANYAAN[pertanyaanIndex]}
             nomorSoal={pertanyaanIndex + 1}
             totalSoal={SEMUA_PERTANYAAN.length}
@@ -412,7 +432,7 @@ function Intro({
             animation: "pulseBucin 2s ease-in-out infinite",
           }}
         >
-          💘 Coba juga Sensus Bucin 2026 →
+          <span style={{ animation: "heartbeat 1.5s ease-in-out infinite", display: "inline-block", marginRight: 6 }}>💘</span>Coba juga Sensus Bucin 2026 →
         </button>
 
         <button onClick={onLihatHasil} style={btnPrimary}>
@@ -934,7 +954,7 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
     setNama(bersih);
   }
 
-  const namaKosong = nama.trim().length === 0;
+  const namaKosong = nama.trim().length < 3;
   const terlalupanjang = nama.length >= MAX_NAMA;
 
   return (
@@ -1179,10 +1199,10 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
               GOLONGAN BARU TERDETEKSI
             </div>
             <div
+              className="golongan-shimmer"
               style={{
                 fontSize: 26,
                 fontWeight: 800,
-                color: WARNA.primer,
                 fontFamily: FONT_DISPLAY,
                 margin: "6px 0 10px",
                 lineHeight: 1.2,
@@ -1220,7 +1240,7 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
           boxShadow: "0 6px 16px rgba(194,24,91,0.35)",
         }}
       >
-        💘 Coba juga Sensus Bucin 2026 →
+        <span style={{ animation: "heartbeat 1.5s ease-in-out infinite", display: "inline-block", marginRight: 6 }}>💘</span>Coba juga Sensus Bucin 2026 →
       </button>
 
       <button onClick={onLihatHasil} style={btnSecondary}>
@@ -1332,22 +1352,23 @@ function ShareButtons({ golonganHasil }) {
         onClick={salinTeksLink}
         style={{
           width: "100%",
-          background: "transparent",
-          border: "none",
-          color: "rgba(255,255,255,0.85)",
+          background: "rgba(255,255,255,0.12)",
+          border: "1.5px dashed rgba(255,255,255,0.5)",
+          borderRadius: 12,
+          color: WARNA.putih,
           fontSize: 13,
-          fontWeight: 600,
+          fontWeight: 700,
           cursor: "pointer",
           fontFamily: FONT_BODY,
           marginBottom: 12,
-          textDecoration: "underline",
+          padding: "10px 0",
         }}
       >
         {salinStatus === "ok"
-          ? "Tersalin! Tinggal paste."
+          ? "✓ Tersalin! Tinggal paste."
           : salinStatus === "gagal"
           ? "Gagal menyalin, coba lagi."
-          : "Atau salin teks & link"}
+          : "📋 Salin teks & link"}
       </button>
 
       <button
@@ -1414,6 +1435,9 @@ function btnShare(bg, border) {
 
 function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
   const respondenValid = semuaResponden.filter((r) => r.golongan_deskripsi);
+  const [tampilSejumlah, setTampilSejumlah] = useState(10);
+  const ditampilkan = respondenValid.slice(0, tampilSejumlah);
+  const adaLagi = tampilSejumlah < respondenValid.length;
 
   return (
     <div>
@@ -1490,7 +1514,7 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {respondenValid.map((r, idx) => (
+        {ditampilkan.map((r, idx) => (
           <div key={r.id || idx} style={kartuPutih}>
             <div
               style={{
@@ -1545,6 +1569,27 @@ function Hasil({ semuaResponden, totalResponden, onKembali, onRefresh }) {
           </div>
         ))}
       </div>
+
+      {adaLagi && (
+        <button
+          onClick={() => setTampilSejumlah((prev) => prev + 10)}
+          style={{
+            width: "100%",
+            padding: "13px 0",
+            background: "rgba(255,255,255,0.15)",
+            border: "1.5px solid rgba(255,255,255,0.3)",
+            borderRadius: 16,
+            color: WARNA.putih,
+            fontSize: 14,
+            fontWeight: 700,
+            cursor: "pointer",
+            fontFamily: FONT_BODY,
+            marginBottom: 10,
+          }}
+        >
+          Muat lebih banyak ({respondenValid.length - tampilSejumlah} lagi)
+        </button>
+      )}
 
       <button onClick={onKembali} style={btnSecondary}>
         Kembali ke Halaman Awal
