@@ -21,6 +21,10 @@ export function validasiNama(input) {
     return { valid: false, pesan: "Nama gak boleh kosong." };
   }
 
+  if (trimmed.length < 3) {
+    return { valid: false, pesan: "Nama minimal 3 huruf ya." };
+  }
+
   if (trimmed.length > MAX_PANJANG_NAMA) {
     return { valid: false, pesan: `Nama maksimal ${MAX_PANJANG_NAMA} karakter.` };
   }
