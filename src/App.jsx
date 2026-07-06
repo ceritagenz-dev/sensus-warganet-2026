@@ -203,8 +203,8 @@ export default function App() {
           50% { transform: scale(1.02); box-shadow: 0 10px 28px rgba(194,24,91,0.6); }
         }
         @keyframes pulseMultai {
-          0%, 100% { box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
-          50% { box-shadow: 0 8px 28px rgba(251,191,36,0.55), 0 0 0 6px rgba(251,191,36,0.12); }
+          0%, 100% { box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+          50% { box-shadow: 0 10px 32px rgba(251,191,36,0.6), 0 0 0 6px rgba(251,191,36,0.12); }
         }
         @keyframes floatShape {
           0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
@@ -220,6 +220,27 @@ export default function App() {
           30% { transform: scale(1); }
           45% { transform: scale(1.15); }
           60% { transform: scale(1); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.25; }
+        }
+        @keyframes glowRekomendasi {
+          0%, 100% { box-shadow: 0 4px 14px rgba(245,158,11,0.15); }
+          50% { box-shadow: 0 4px 20px rgba(245,158,11,0.4), 0 0 0 3px rgba(245,158,11,0.1); }
+        }
+        @keyframes bounceCTA {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes denyutApi {
+          0%, 100% { transform: scale(1) rotate(-3deg); }
+          25% { transform: scale(1.12) rotate(3deg); }
+          75% { transform: scale(0.95) rotate(-2deg); }
+        }
+        @keyframes denyutHati {
+          0%, 100% { transform: scale(1); opacity: 0.85; }
+          50% { transform: scale(1.15); opacity: 1; }
         }
         .bg-shape {
           position: fixed;
@@ -486,7 +507,19 @@ function Intro({
           fontWeight: 600,
         }}
       >
-        <span>🟢 SENSUS DIBUKA</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{
+              display: "inline-block",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#4ADE80",
+              animation: "blink 1.5s ease-in-out infinite",
+            }}
+          />
+          SENSUS DIBUKA
+        </span>
         <span
           style={{
             background: "rgba(255,255,255,0.18)",
@@ -501,6 +534,10 @@ function Intro({
         </span>
       </div>
 
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", textAlign: "center", marginBottom: 14, fontWeight: 600 }}>
+        ⏱ Cuma butuh ~3 menit kok!
+      </div>
+
       <button
         onClick={onMulai}
         style={{ ...btnKuning, animation: "pulseMultai 2.5s ease-in-out infinite" }}
@@ -512,16 +549,16 @@ function Intro({
         onClick={onLihatHasil}
         style={{
           width: "100%",
-          background: "none",
-          border: "none",
-          color: "rgba(255,255,255,0.85)",
+          background: "rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.3)",
+          borderRadius: 14,
+          color: WARNA.putih,
           fontSize: 14,
-          fontWeight: 600,
+          fontWeight: 700,
           cursor: "pointer",
           marginTop: 14,
+          padding: "11px 0",
           fontFamily: FONT_BODY,
-          textDecoration: "underline",
-          textUnderlineOffset: 3,
         }}
       >
         Intip hasil orang lain dulu 👀
@@ -756,6 +793,7 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
   }
 
   const namaKosong = nama.trim().length < 3;
+  const namaKurang = nama.trim().length > 0 && nama.trim().length < 3;
   const terlalupanjang = nama.length >= MAX_NAMA;
 
   return (
@@ -809,8 +847,8 @@ function IsiNama({ nama, setNama, errorNama, onSubmit }) {
             fontWeight: 600,
           }}
         >
-          <span style={{ color: terlalupanjang ? "#DC2626" : "transparent" }}>
-            Nama terlalu panjang! 😅
+          <span style={{ color: terlalupanjang ? "#DC2626" : namaKurang ? WARNA.kuningGelap : "transparent" }}>
+            {terlalupanjang ? "Nama terlalu panjang! 😅" : namaKurang ? `Minimal 3 huruf ya — ${3 - nama.trim().length} lagi!` : " "}
           </span>
           <span style={{ color: terlalupanjang ? "#DC2626" : WARNA.teksAbu }}>
             {nama.length}/{MAX_NAMA}
@@ -1061,7 +1099,7 @@ function RekomendasiBox({ teks }) {
         padding: "16px 18px",
         marginBottom: 16,
         textAlign: "left",
-        boxShadow: "0 4px 14px rgba(49,35,153,0.15)",
+        animation: "glowRekomendasi 3s ease-in-out infinite",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
@@ -1125,25 +1163,27 @@ function ShareButtons({ golonganHasil }) {
     <div style={{ marginBottom: 14 }}>
       <div
         style={{
-          fontSize: 13,
-          color: "rgba(255,255,255,0.9)",
-          marginBottom: 10,
-          fontWeight: 700,
+          fontSize: 14,
+          color: WARNA.putih,
+          marginBottom: 12,
+          fontWeight: 800,
           textAlign: "center",
+          animation: "bounceCTA 2s ease-in-out infinite",
+          letterSpacing: "0.03em",
         }}
       >
-        Bagikan hasil sensus lo
+        🎉 Bagikan hasil sensus lo!
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 9, marginBottom: 9 }}>
-        <button onClick={shareNative} style={btnShareIkon("#E0639A")}>
+        <button onClick={shareNative} style={btnShareIkon("rgba(255,255,255,0.15)", true)}>
           <span style={{ fontSize: 20 }}>📲</span>
           <span>Share</span>
         </button>
-        <button onClick={shareWhatsApp} style={btnShareIkon("#25D366")}>
+        <button onClick={shareWhatsApp} style={btnShareIkon("rgba(255,255,255,0.15)", true)}>
           <span style={{ fontSize: 20 }}>💬</span>
           <span>WhatsApp</span>
         </button>
-        <button onClick={shareX} style={btnShareIkon("#000000")}>
+        <button onClick={shareX} style={btnShareIkon("rgba(255,255,255,0.15)", true)}>
           𝕏
           <span>Post</span>
         </button>
@@ -1200,22 +1240,23 @@ function ShareButtons({ golonganHasil }) {
   );
 }
 
-function btnShareIkon(bg) {
+function btnShareIkon(bg, mono = false) {
   return {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
-    padding: "16px 0",
+    padding: "14px 0",
     background: bg,
     color: WARNA.putih,
-    border: "none",
+    border: mono ? "1.5px solid rgba(255,255,255,0.3)" : "none",
     borderRadius: 16,
     fontSize: 12.5,
     fontWeight: 700,
     cursor: "pointer",
     fontFamily: FONT_BODY,
+    backdropFilter: "blur(4px)",
   };
 }
 
