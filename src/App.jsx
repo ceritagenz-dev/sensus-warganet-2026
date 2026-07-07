@@ -288,16 +288,18 @@ export default function App() {
         )}
 
         {step === "soal" && (
-          <SoalTunggal
-            key={pertanyaanIndex}
-            pertanyaan={SEMUA_PERTANYAAN[pertanyaanIndex]}
-            nomorSoal={pertanyaanIndex + 1}
-            totalSoal={SEMUA_PERTANYAAN.length}
-            jawabanTerpilih={jawaban[SEMUA_PERTANYAAN[pertanyaanIndex].id]}
-            onPilih={pilihJawaban}
-            onKembali={kembaliKeSoalSebelumnya}
-            bisaKembali={pertanyaanIndex > 0}
-          />
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "calc(100vh - 120px)" }}>
+            <SoalTunggal
+              key={pertanyaanIndex}
+              pertanyaan={SEMUA_PERTANYAAN[pertanyaanIndex]}
+              nomorSoal={pertanyaanIndex + 1}
+              totalSoal={SEMUA_PERTANYAAN.length}
+              jawabanTerpilih={jawaban[SEMUA_PERTANYAAN[pertanyaanIndex].id]}
+              onPilih={pilihJawaban}
+              onKembali={kembaliKeSoalSebelumnya}
+              bisaKembali={pertanyaanIndex > 0}
+            />
+          </div>
         )}
 
         {step === "loading" && <LoadingHasil />}
@@ -1212,30 +1214,67 @@ function ShareButtons({ golonganHasil }) {
           : "📋 Salin teks & link"}
       </button>
 
-      <button
+      <div
         onClick={() => window.open("https://x.com/ceritagenz", "_blank")}
         style={{
           width: "100%",
-          padding: "12px 0",
-          background: "#000000",
-          color: WARNA.putih,
-          border: "none",
-          borderRadius: 16,
-          fontSize: 14,
-          fontWeight: 700,
-          cursor: "pointer",
-          fontFamily: FONT_BODY,
+          background: "rgba(255,255,255,0.1)",
+          border: "1.5px solid rgba(255,255,255,0.25)",
+          borderRadius: 20,
+          padding: "14px 16px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
+          gap: 12,
+          cursor: "pointer",
+          backdropFilter: "blur(4px)",
+          boxSizing: "border-box",
         }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-        Follow @ceritagenz
-      </button>
+        {/* Ikon X bulat */}
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: "#000000",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+        </div>
+
+        {/* Teks */}
+        <div style={{ flex: 1, textAlign: "left" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: WARNA.putih, fontFamily: FONT_DISPLAY }}>
+            Follow @ceritagenz
+          </div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 600, marginTop: 2, fontFamily: FONT_BODY }}>
+            Random thoughts generasi capek tapi tetep jalan 🫡
+          </div>
+        </div>
+
+        {/* Tombol Follow */}
+        <div
+          style={{
+            background: WARNA.putih,
+            color: WARNA.primerGelap,
+            borderRadius: 20,
+            padding: "7px 16px",
+            fontSize: 13,
+            fontWeight: 800,
+            fontFamily: FONT_DISPLAY,
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Follow
+        </div>
+      </div>
     </div>
   );
 }
