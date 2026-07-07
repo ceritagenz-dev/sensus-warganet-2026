@@ -289,6 +289,33 @@ export default function App() {
 
         {step === "soal" && (
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "calc(100vh - 120px)" }}>
+            {/* Mini header di atas soal */}
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.16em",
+                  color: "rgba(255,255,255,0.6)",
+                  fontWeight: 600,
+                  fontFamily: FONT_BODY,
+                  marginBottom: 2,
+                }}
+              >
+                REPUBLIK INTERNET INDONESIA
+              </div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: WARNA.putih,
+                  fontFamily: FONT_DISPLAY,
+                  textShadow: "0 2px 0 rgba(49,35,153,0.3)",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                SENSUS WARGANET 2026
+              </div>
+            </div>
             <SoalTunggal
               key={pertanyaanIndex}
               pertanyaan={SEMUA_PERTANYAAN[pertanyaanIndex]}
