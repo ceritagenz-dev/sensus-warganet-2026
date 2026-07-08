@@ -683,67 +683,109 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
 
   return (
     <div>
-      <div style={{ marginBottom: 18 }}>
+      {/* Progress bar area */}
+      <div style={{ marginBottom: 20 }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 8,
+            marginBottom: 10,
             color: WARNA.putih,
           }}
         >
-          <span style={{ fontWeight: 700, fontSize: 14 }}>
+          <span style={{ fontWeight: 700, fontSize: 14, opacity: 0.9 }}>
             Soal {nomorSoal} / {totalSoal}
           </span>
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 4,
-              fontWeight: 700,
+              gap: 5,
+              fontWeight: 800,
               fontSize: 14,
-              background: "rgba(255,255,255,0.18)",
-              padding: "3px 10px",
-              borderRadius: 12,
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              padding: "4px 12px",
+              borderRadius: 20,
+              backdropFilter: "blur(4px)",
             }}
           >
             🔥 {persen}%
           </span>
         </div>
+        {/* Progress bar dengan glow di ujung */}
         <div
           style={{
-            height: 10,
-            background: "rgba(255,255,255,0.25)",
+            height: 8,
+            background: "rgba(255,255,255,0.15)",
             borderRadius: 10,
-            overflow: "hidden",
+            overflow: "visible",
+            position: "relative",
           }}
         >
           <div
             style={{
               height: "100%",
               width: `${persen}%`,
-              background: `linear-gradient(90deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
+              background: `linear-gradient(90deg, ${WARNA.kuning}99, ${WARNA.kuningGelap})`,
               borderRadius: 10,
-              transition: "width 0.3s ease",
+              transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              position: "relative",
             }}
-          />
+          >
+            {/* Titik glow di ujung progress */}
+            <div style={{
+              position: "absolute",
+              right: -4,
+              top: -4,
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              background: WARNA.kuning,
+              boxShadow: `0 0 10px 3px ${WARNA.kuning}88`,
+            }} />
+          </div>
         </div>
       </div>
 
-      <div style={kartuPutih}>
+      {/* Kartu soal — lebih dramatis */}
+      <div
+        style={{
+          background: "rgba(255,255,255,0.97)",
+          borderRadius: 28,
+          padding: "24px 20px 20px",
+          marginBottom: 14,
+          boxShadow: "0 20px 60px rgba(30,27,75,0.35), 0 4px 16px rgba(30,27,75,0.2)",
+          border: "1px solid rgba(255,255,255,0.8)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        {/* Label nomor soal di dalam kartu */}
+        <div style={{
+          fontSize: 11,
+          fontWeight: 800,
+          color: WARNA.aksenTerang,
+          letterSpacing: "0.1em",
+          marginBottom: 8,
+          fontFamily: FONT_BODY,
+        }}>
+          PERTANYAAN {String(nomorSoal).padStart(2, "0")}
+        </div>
+
         <div
           style={{
-            fontSize: 19,
+            fontSize: 18,
             fontWeight: 700,
-            marginBottom: 18,
-            lineHeight: 1.4,
+            marginBottom: 20,
+            lineHeight: 1.45,
             color: WARNA.primer,
             fontFamily: FONT_DISPLAY,
           }}
         >
           {pertanyaan.label}
         </div>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {pertanyaan.opsi.map((opsi, i) => {
             const huruf = ["A", "B", "C", "D", "E"][i];
@@ -752,23 +794,45 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
               <button
                 key={opsi}
                 onClick={() => onPilih(pertanyaan.id, opsi)}
-                style={optionStyle(aktif)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  textAlign: "left",
+                  padding: "13px 16px",
+                  borderRadius: 18,
+                  border: aktif ? `2.5px solid ${WARNA.primer}` : `1.5px solid #E8E4F8`,
+                  background: aktif
+                    ? `linear-gradient(135deg, ${WARNA.bgSoft}, #E0DBFF)`
+                    : "#FAFAFA",
+                  color: aktif ? WARNA.primerGelap : "#2D2D2D",
+                  fontWeight: aktif ? 700 : 500,
+                  fontSize: 15,
+                  cursor: "pointer",
+                  fontFamily: FONT_BODY,
+                  width: "100%",
+                  lineHeight: 1.4,
+                  transition: "all 0.18s ease",
+                  boxShadow: aktif ? `0 4px 16px ${WARNA.primer}28` : "0 1px 3px rgba(0,0,0,0.06)",
+                }}
               >
                 <span
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     borderRadius: "50%",
                     marginRight: 12,
-                    fontWeight: 700,
-                    fontSize: aktif ? 16 : 13,
-                    background: aktif ? WARNA.primer : WARNA.bgSoft,
+                    fontWeight: 800,
+                    fontSize: aktif ? 15 : 13,
+                    background: aktif
+                      ? `linear-gradient(135deg, ${WARNA.primer}, ${WARNA.aksenTerang})`
+                      : WARNA.bgSoft,
                     color: aktif ? WARNA.putih : WARNA.primer,
                     flexShrink: 0,
-                    transition: "all 0.15s ease",
+                    transition: "all 0.18s ease",
+                    boxShadow: aktif ? `0 3px 8px ${WARNA.primer}44` : "none",
                   }}
                 >
                   {aktif ? "✓" : huruf}
@@ -780,16 +844,26 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
         </div>
       </div>
 
-      {/* Quote humor + sisa soal */}
-      <div style={{ textAlign: "center", marginBottom: 14, padding: "0 8px" }}>
+      {/* Quote + sisa soal dalam pill */}
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: 14,
+          padding: "10px 16px",
+          background: "rgba(255,255,255,0.08)",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.12)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
         <div
           style={{
             fontSize: 13,
-            color: "rgba(255,255,255,0.82)",
+            color: "rgba(255,255,255,0.9)",
             fontWeight: 600,
             fontFamily: FONT_BODY,
             fontStyle: "italic",
-            marginBottom: 4,
+            marginBottom: 3,
           }}
         >
           {quoteHumor}
@@ -797,7 +871,7 @@ function SoalTunggal({ pertanyaan, nomorSoal, totalSoal, jawabanTerpilih, onPili
         <div
           style={{
             fontSize: 12,
-            color: "rgba(255,255,255,0.55)",
+            color: "rgba(255,255,255,0.6)",
             fontWeight: 600,
             fontFamily: FONT_BODY,
           }}
