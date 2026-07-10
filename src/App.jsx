@@ -7,23 +7,27 @@ import { validasiNama, bersihkanInputNama, MAX_NAMA } from "./namaValidasi";
 
 // ====== TOKEN DESAIN ======
 const WARNA = {
-  primer: "#4338CA",
-  primerGelap: "#312399",
-  aksenTerang: "#6D5CE7",
-  kuning: "#FBBF24",
+  primer: "#5B4FE8",
+  primerGelap: "#3D2FCC",
+  aksenTerang: "#818CF8",
+  cyan: "#22D3EE",
+  cyanGelap: "#0EA5E9",
+  kuning: "#FCD34D",
   kuningGelap: "#F59E0B",
   bgSoft: "#EEF2FF",
   putih: "#FFFFFF",
   teksGelap: "#1E1B4B",
   teksAbu: "#6B647F",
-  garis: "#DDD6FE",
+  garis: "#C4B5FD",
+  dark: "#0F0E2A",
+  darkCard: "rgba(255,255,255,0.06)",
 };
 
 const FONT_DISPLAY = "'Baloo 2', 'Fredoka', system-ui, sans-serif";
 const FONT_BODY = "'Quicksand', system-ui, -apple-system, sans-serif";
 
 const gradientBg =
-  "linear-gradient(160deg, #3730A3 0%, #4338CA 30%, #5B4FD4 60%, #6D5CE7 85%, #7C6FF0 100%)";
+  "linear-gradient(145deg, #0F0E2A 0%, #1A1456 25%, #2D1B8E 50%, #3D2FCC 75%, #5B4FE8 100%)";
 
 // Daftar flat semua 40 pertanyaan, dengan referensi bagian asalnya
 const SEMUA_PERTANYAAN = BAGIAN.flatMap((bagian) =>
@@ -198,17 +202,58 @@ export default function App() {
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+
+        * { box-sizing: border-box; }
+
+        body {
+          background: #0F0E2A;
+        }
+
+        /* Noise texture overlay */
+        .app-root::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+          pointer-events: none;
+          z-index: 1;
+          opacity: 0.35;
+        }
+
+        .app-root > * { position: relative; z-index: 2; }
+
+        /* Glassmorphism card */
+        .glass-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Neon glow classes */
+        .neon-cyan {
+          text-shadow: 0 0 20px rgba(34,211,238,0.8), 0 0 40px rgba(34,211,238,0.4);
+        }
+        .neon-yellow {
+          text-shadow: 0 0 20px rgba(252,211,77,0.8), 0 0 40px rgba(252,211,77,0.3);
+        }
+
         @keyframes pulseBucin {
-          0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(194,24,91,0.35); }
-          50% { transform: scale(1.02); box-shadow: 0 10px 28px rgba(194,24,91,0.6); }
+          0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(194,24,91,0.4); }
+          50% { transform: scale(1.025); box-shadow: 0 10px 36px rgba(194,24,91,0.7), 0 0 40px rgba(194,24,91,0.2); }
         }
         @keyframes pulseMultai {
-          0%, 100% { box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-          50% { box-shadow: 0 10px 32px rgba(251,191,36,0.6), 0 0 0 6px rgba(251,191,36,0.12); }
+          0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 0 rgba(252,211,77,0); }
+          50% { box-shadow: 0 12px 40px rgba(245,158,11,0.5), 0 0 0 8px rgba(252,211,77,0.08); }
         }
         @keyframes floatShape {
-          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
-          50% { transform: translateY(-20px) rotate(8deg); opacity: 0.1; }
+          0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+          33% { transform: translateY(-24px) rotate(5deg) scale(1.05); }
+          66% { transform: translateY(8px) rotate(-4deg) scale(0.96); }
+        }
+        @keyframes floatShapeSlow {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.12; }
+          50% { transform: translateY(-30px) rotate(12deg); opacity: 0.18; }
         }
         @keyframes shimmerGolongan {
           0% { background-position: -200% center; }
@@ -216,52 +261,80 @@ export default function App() {
         }
         @keyframes heartbeat {
           0%, 100% { transform: scale(1); }
-          15% { transform: scale(1.25); }
+          15% { transform: scale(1.3); }
           30% { transform: scale(1); }
-          45% { transform: scale(1.15); }
+          45% { transform: scale(1.18); }
           60% { transform: scale(1); }
         }
         @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.25; }
+          0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(74,222,128,0.8); }
+          50% { opacity: 0.3; box-shadow: none; }
         }
         @keyframes glowRekomendasi {
-          0%, 100% { box-shadow: 0 4px 14px rgba(245,158,11,0.15); }
-          50% { box-shadow: 0 4px 20px rgba(245,158,11,0.4), 0 0 0 3px rgba(245,158,11,0.1); }
+          0%, 100% { box-shadow: 0 4px 14px rgba(245,158,11,0.2), 0 0 0 0 rgba(245,158,11,0); }
+          50% { box-shadow: 0 4px 28px rgba(245,158,11,0.5), 0 0 20px rgba(245,158,11,0.15); }
         }
         @keyframes bounceCTA {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
+          50% { transform: translateY(-5px); }
         }
         @keyframes denyutApi {
-          0%, 100% { transform: scale(1) rotate(-3deg); }
-          25% { transform: scale(1.12) rotate(3deg); }
-          75% { transform: scale(0.95) rotate(-2deg); }
+          0%, 100% { transform: scale(1) rotate(-3deg); filter: brightness(1); }
+          25% { transform: scale(1.15) rotate(4deg); filter: brightness(1.2); }
+          75% { transform: scale(0.92) rotate(-3deg); filter: brightness(0.9); }
         }
         @keyframes denyutHati {
-          0%, 100% { transform: scale(1); opacity: 0.85; }
-          50% { transform: scale(1.15); opacity: 1; }
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.18); }
         }
+        @keyframes neonPulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
         .bg-shape {
           position: fixed;
           border-radius: 50%;
           pointer-events: none;
           z-index: 0;
-          animation: floatShape 8s ease-in-out infinite;
+          filter: blur(40px);
+          animation: floatShapeSlow 10s ease-in-out infinite;
         }
+
         .golongan-shimmer {
-          background: linear-gradient(90deg, #4338CA 25%, #8B7CF0 50%, #4338CA 75%);
+          background: linear-gradient(90deg, #818CF8 0%, #22D3EE 40%, #FCD34D 60%, #818CF8 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          animation: shimmerGolongan 3s linear infinite;
+          animation: shimmerGolongan 2.5s linear infinite;
+        }
+
+        .option-btn {
+          transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:active {
+          transform: scale(0.97);
+        }
+
+        .slide-up {
+          animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
       `}</style>
-      {/* Decorative background shapes */}
-      <div className="bg-shape" style={{ width: 280, height: 280, background: "#7C6FF0", top: -80, right: -80, animationDelay: "0s" }} />
-      <div className="bg-shape" style={{ width: 200, height: 200, background: "#FBBF24", bottom: 100, left: -60, animationDelay: "3s" }} />
-      <div className="bg-shape" style={{ width: 120, height: 120, background: "#A78BFA", top: "40%", right: -30, animationDelay: "5s" }} />
+
+      {/* Neon background orbs — lebih besar dan dramatis */}
+      <div className="bg-shape" style={{ width: 380, height: 380, background: "rgba(91,79,232,0.5)", top: -120, right: -100, animationDelay: "0s" }} />
+      <div className="bg-shape" style={{ width: 280, height: 280, background: "rgba(34,211,238,0.25)", bottom: 80, left: -80, animationDelay: "3.5s" }} />
+      <div className="bg-shape" style={{ width: 200, height: 200, background: "rgba(252,211,77,0.2)", top: "35%", right: -60, animationDelay: "6s" }} />
+      <div className="bg-shape" style={{ width: 150, height: 150, background: "rgba(167,139,250,0.3)", top: "60%", left: "10%", animationDelay: "2s" }} />
       <div style={{ maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {step === "intro" && (
           <>
@@ -1615,18 +1688,30 @@ function formatWaktu(iso) {
 }
 
 const kartuPutih = {
-  background: WARNA.putih,
-  borderRadius: 22,
+  background: "rgba(255,255,255,0.95)",
+  borderRadius: 24,
   padding: 22,
   marginBottom: 16,
-  boxShadow: "0 8px 24px rgba(30,27,75,0.22)",
+  boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(91,79,232,0.3), inset 0 1px 0 rgba(255,255,255,0.8)",
+  border: "1px solid rgba(255,255,255,0.7)",
+};
+
+const kartuGlass = {
+  background: "rgba(255,255,255,0.06)",
+  borderRadius: 24,
+  padding: 22,
+  marginBottom: 16,
+  border: "1px solid rgba(255,255,255,0.12)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
 };
 
 const labelKecil = {
   fontSize: 12,
-  color: WARNA.aksenTerang,
+  color: WARNA.cyan,
   fontWeight: 800,
-  letterSpacing: "0.06em",
+  letterSpacing: "0.08em",
   marginBottom: 8,
 };
 
@@ -1637,17 +1722,19 @@ function optionStyle(aktif) {
     textAlign: "left",
     padding: "14px 16px",
     borderRadius: 16,
-    border: aktif ? `2.5px solid ${WARNA.primer}` : `2px solid ${WARNA.garis}`,
-    background: aktif ? WARNA.bgSoft : WARNA.putih,
-    color: aktif ? WARNA.primerGelap : "#111111",
+    border: aktif ? `2px solid ${WARNA.cyan}` : `1.5px solid #E8E4F8`,
+    background: aktif ? "linear-gradient(135deg, #EEF2FF, #E0DBFF)" : "#FAFAFA",
+    color: aktif ? WARNA.primerGelap : "#1E1B4B",
     fontWeight: aktif ? 700 : 500,
     fontSize: 15,
     cursor: "pointer",
     fontFamily: FONT_BODY,
     width: "100%",
     lineHeight: 1.4,
-    transition: "all 0.15s ease",
-    boxShadow: aktif ? `0 0 0 3px rgba(67,56,202,0.15)` : "none",
+    transition: "all 0.18s ease",
+    boxShadow: aktif
+      ? `0 4px 16px rgba(34,211,238,0.25), 0 0 0 3px rgba(34,211,238,0.1)`
+      : "0 1px 3px rgba(0,0,0,0.06)",
   };
 }
 
@@ -1655,7 +1742,7 @@ const btnKuning = {
   width: "100%",
   padding: "16px 0",
   background: `linear-gradient(135deg, ${WARNA.kuning}, ${WARNA.kuningGelap})`,
-  color: WARNA.primerGelap,
+  color: "#1A1200",
   border: "none",
   borderRadius: 20,
   fontSize: 16,
@@ -1663,59 +1750,62 @@ const btnKuning = {
   letterSpacing: "0.01em",
   cursor: "pointer",
   fontFamily: FONT_DISPLAY,
-  boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+  boxShadow: "0 8px 24px rgba(245,158,11,0.4), 0 2px 8px rgba(0,0,0,0.3)",
 };
 
 const btnPrimary = {
   width: "100%",
   padding: "15px 0",
-  background: WARNA.putih,
-  color: WARNA.primer,
-  border: "none",
+  background: "rgba(255,255,255,0.12)",
+  color: WARNA.putih,
+  border: "1.5px solid rgba(255,255,255,0.25)",
   borderRadius: 20,
   fontSize: 15,
   fontWeight: 800,
   cursor: "pointer",
   fontFamily: FONT_DISPLAY,
-  boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+  backdropFilter: "blur(10px)",
+  boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
 };
 
 const btnSecondary = {
   width: "100%",
   padding: "15px 0",
-  background: WARNA.putih,
-  color: WARNA.primer,
-  border: "none",
+  background: "rgba(255,255,255,0.1)",
+  color: WARNA.putih,
+  border: "1.5px solid rgba(255,255,255,0.2)",
   borderRadius: 20,
   fontSize: 15,
   fontWeight: 800,
   cursor: "pointer",
   marginTop: 8,
   fontFamily: FONT_DISPLAY,
-  boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+  backdropFilter: "blur(10px)",
 };
 
 const btnGhost = {
   fontSize: 12,
-  padding: "5px 12px",
-  background: "rgba(255,255,255,0.18)",
-  border: "none",
+  padding: "5px 14px",
+  background: "rgba(255,255,255,0.1)",
+  border: "1px solid rgba(255,255,255,0.15)",
   borderRadius: 12,
   cursor: "pointer",
   color: WARNA.putih,
   fontFamily: FONT_BODY,
   fontWeight: 700,
+  backdropFilter: "blur(4px)",
 };
 
 const btnKembali = {
   width: "100%",
   padding: "12px 0",
-  background: "rgba(255,255,255,0.15)",
-  color: WARNA.putih,
-  border: "none",
+  background: "rgba(255,255,255,0.08)",
+  color: "rgba(255,255,255,0.7)",
+  border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: 16,
   fontSize: 14,
   fontWeight: 700,
   cursor: "pointer",
   fontFamily: FONT_BODY,
+  backdropFilter: "blur(4px)",
 };
