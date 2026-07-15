@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, forwardRef } from "react";
+import { toPng } from "html-to-image";
 import { supabase } from "./supabaseClient";
 import { BAGIAN, TOTAL_PERTANYAAN } from "./sensusData";
 import { hitungSkorTotal, tentukanGolongan, pilihDeskripsiAcak } from "./golonganData";
@@ -535,7 +536,7 @@ function Intro({
           <RekomendasiBox teks={golonganHasil.rekomendasi} />
         )}
 
-        {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
+        {golonganHasil && <ShareButtons golonganHasil={golonganHasil} nama={namaTersimpan} />}
 
         <button
           onClick={() => window.open("https://lovegenz.vercel.app/", "_blank")}
@@ -1236,7 +1237,7 @@ function Submitted({ nomorResponden, golonganHasil, namaTersimpan, onLihatHasil 
         <RekomendasiBox teks={golonganHasil.rekomendasi} />
       )}
 
-      {golonganHasil && <ShareButtons golonganHasil={golonganHasil} />}
+      {golonganHasil && <ShareButtons golonganHasil={golonganHasil} nama={namaTersimpan} />}
 
       <button
         onClick={() => window.open("https://lovegenz.vercel.app/", "_blank")}
@@ -1296,8 +1297,173 @@ function RekomendasiBox({ teks }) {
   );
 }
 
-function ShareButtons({ golonganHasil }) {
+// Kartu hasil versi "kartu pos" yang dirender di luar layar, lalu ditangkap
+// jadi PNG untuk dibagikan/didownload. Ukuran tetap besar (skala 2x saat capture)
+// biar hasil gambarnya tajam di semua HP.
+const KONFETI = [
+  { top: "4%", left: "7%", rotasi: -18, warna: "#FCD34D", w: 26, h: 11 },
+  { top: "3%", left: "78%", rotasi: 22, warna: "#22D3EE", w: 11, h: 24 },
+  { top: "13%", left: "88%", rotasi: -12, warna: "#F472B6", w: 16, h: 16, bulat: true },
+  { top: "16%", left: "3%", rotasi: 35, warna: "#818CF8", w: 14, h: 14, bulat: true },
+  { top: "6%", left: "45%", rotasi: 8, warna: "#F472B6", w: 12, h: 12, bulat: true },
+  { top: "90%", left: "8%", rotasi: -20, warna: "#22D3EE", w: 20, h: 9 },
+  { top: "93%", left: "82%", rotasi: 16, warna: "#FCD34D", w: 15, h: 15, bulat: true },
+  { top: "78%", left: "92%", rotasi: -10, warna: "#818CF8", w: 10, h: 20 },
+  { top: "70%", left: "2%", rotasi: 28, warna: "#F472B6", w: 22, h: 10 },
+];
+
+const ShareImageCard = forwardRef(function ShareImageCard({ nama, golonganHasil }, ref) {
+  return (
+    <div
+      ref={ref}
+      style={{
+        width: 600,
+        height: 780,
+        position: "relative",
+        overflow: "hidden",
+        background: "radial-gradient(circle at 28% 0%, #2D1B8E 0%, #1A1456 45%, #0F0E2A 100%)",
+        fontFamily: FONT_BODY,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "58px 46px 44px",
+        boxSizing: "border-box",
+      }}
+    >
+      {KONFETI.map((c, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            top: c.top,
+            left: c.left,
+            width: c.w,
+            height: c.h,
+            background: c.warna,
+            borderRadius: c.bulat ? "50%" : 3,
+            transform: `rotate(${c.rotasi}deg)`,
+            opacity: 0.9,
+          }}
+        />
+      ))}
+
+      <div style={{ fontSize: 58, marginBottom: 4 }}>🏆</div>
+      <div
+        style={{
+          fontSize: 15,
+          color: "rgba(255,255,255,0.75)",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+        }}
+      >
+        Hasil Sensus Untuk
+      </div>
+      <div
+        style={{
+          fontSize: 42,
+          fontWeight: 800,
+          fontFamily: FONT_DISPLAY,
+          color: WARNA.kuning,
+          marginTop: 4,
+          marginBottom: 26,
+          textAlign: "center",
+          lineHeight: 1.15,
+          maxWidth: "100%",
+          overflowWrap: "anywhere",
+        }}
+      >
+        {nama || "Warganet"}
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          background: "#FFFFFF",
+          borderRadius: 28,
+          padding: "42px 30px 34px",
+          width: "100%",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.45)",
+          textAlign: "center",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: -16,
+            left: -16,
+            background: WARNA.kuning,
+            color: "#78350F",
+            fontFamily: FONT_DISPLAY,
+            fontWeight: 800,
+            fontSize: 13,
+            lineHeight: 1.3,
+            padding: "11px 15px",
+            borderRadius: 10,
+            transform: "rotate(-12deg)",
+            boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
+            textTransform: "uppercase",
+            letterSpacing: "0.02em",
+          }}
+        >
+          Golongan Baru
+          <br />
+          Terdeteksi
+        </div>
+
+        <div
+          style={{
+            width: 66,
+            height: 66,
+            borderRadius: "50%",
+            background: WARNA.bgSoft,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 20px",
+          }}
+        >
+          <span style={{ fontSize: 30, color: WARNA.primer }}>★</span>
+        </div>
+
+        <div
+          style={{
+            fontSize: 29,
+            fontWeight: 800,
+            fontFamily: FONT_DISPLAY,
+            color: WARNA.primerGelap,
+            lineHeight: 1.28,
+            marginBottom: 18,
+          }}
+        >
+          {golonganHasil?.nama}
+        </div>
+
+        <div style={{ fontSize: 16, color: WARNA.teksAbu, lineHeight: 1.65, fontWeight: 600 }}>
+          {golonganHasil?.deskripsi}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 32, textAlign: "center" }}>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", fontWeight: 600, marginBottom: 5 }}>
+          Kamu golongan apa? Cek di:
+        </div>
+        <div style={{ fontSize: 18, color: WARNA.putih, fontWeight: 800, fontFamily: FONT_DISPLAY }}>
+          sensuswarganet2026.vercel.app
+        </div>
+        <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", fontWeight: 600, marginTop: 9 }}>
+          @ceritagenz • #SensusWarganet2026
+        </div>
+      </div>
+    </div>
+  );
+});
+
+function ShareButtons({ golonganHasil, nama }) {
   const [salinStatus, setSalinStatus] = useState(null);
+  const [statusGambar, setStatusGambar] = useState("idle"); // idle | proses | gagal
+  const kartuGambarRef = useRef(null);
 
   const linkWebsite = typeof window !== "undefined" ? window.location.href : "";
   const teksShare = `Hasil Sensus Warganet 2026 aku: ${golonganHasil.nama}!\n"${golonganHasil.deskripsi}"\n\nIkutan sensusnya di ${linkWebsite}\n\nRandom thoughts generasi capek tapi tetep jalan 🫡 @ceritagenz`;
@@ -1335,8 +1501,49 @@ function ShareButtons({ golonganHasil }) {
     }
   }
 
+  async function bagikanGambar() {
+    if (!kartuGambarRef.current || statusGambar === "proses") return;
+    setStatusGambar("proses");
+    try {
+      const dataUrl = await toPng(kartuGambarRef.current, {
+        pixelRatio: 2,
+        cacheBust: true,
+      });
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const namaFile = `hasil-sensus-warganet-2026-${(nama || "warganet")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")}.png`;
+      const file = new File([blob], namaFile, { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Hasil Sensus Warganet 2026",
+          text: teksShare,
+        });
+      } else {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = namaFile;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+      setStatusGambar("idle");
+    } catch (e) {
+      setStatusGambar("gagal");
+      setTimeout(() => setStatusGambar("idle"), 2500);
+    }
+  }
+
   return (
     <div style={{ marginBottom: 14 }}>
+      {/* Kartu untuk digenerate jadi gambar, dirender di luar layar */}
+      <div style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }} aria-hidden="true">
+        <ShareImageCard ref={kartuGambarRef} nama={nama} golonganHasil={golonganHasil} />
+      </div>
+
       <div
         style={{
           fontSize: 14,
@@ -1350,6 +1557,33 @@ function ShareButtons({ golonganHasil }) {
       >
         🎉 Bagikan hasil sensus lo!
       </div>
+
+      <button
+        onClick={bagikanGambar}
+        disabled={statusGambar === "proses"}
+        style={{
+          width: "100%",
+          padding: "15px 0",
+          background: "linear-gradient(135deg, #F59E0B, #FCD34D)",
+          color: "#78350F",
+          border: "none",
+          borderRadius: 18,
+          fontSize: 15,
+          fontWeight: 800,
+          cursor: statusGambar === "proses" ? "wait" : "pointer",
+          fontFamily: FONT_DISPLAY,
+          marginBottom: 10,
+          boxShadow: "0 6px 16px rgba(245,158,11,0.35)",
+          opacity: statusGambar === "proses" ? 0.75 : 1,
+        }}
+      >
+        {statusGambar === "proses"
+          ? "⏳ Lagi bikin gambar..."
+          : statusGambar === "gagal"
+          ? "Gagal, coba lagi 🙏"
+          : "🖼️ Bagikan sebagai gambar"}
+      </button>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 9, marginBottom: 9 }}>
         <button onClick={shareNative} style={btnShareIkon("rgba(255,255,255,0.15)", true)}>
           <span style={{ fontSize: 20 }}>📲</span>
