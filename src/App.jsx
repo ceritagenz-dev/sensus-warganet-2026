@@ -1463,6 +1463,8 @@ const ShareImageCard = forwardRef(function ShareImageCard({ nama, golonganHasil 
 function ShareButtons({ golonganHasil, nama }) {
   const [salinStatus, setSalinStatus] = useState(null);
   const [statusGambar, setStatusGambar] = useState("idle"); // idle | proses | gagal
+  const [previewGambar, setPreviewGambar] = useState(null); // dataUrl saat preview tampil, null kalau ditutup
+  const [statusSimpan, setStatusSimpan] = useState("idle"); // idle | proses | gagal
   const kartuGambarRef = useRef(null);
 
   const linkWebsite = typeof window !== "undefined" ? window.location.href : "";
@@ -1501,6 +1503,12 @@ function ShareButtons({ golonganHasil, nama }) {
     }
   }
 
+  const namaFileGambar = `hasil-sensus-warganet-2026-${(nama || "warganet")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")}.png`;
+
+  // Generate PNG dari kartu tersembunyi, lalu tampilkan dulu sebagai preview
+  // (belum langsung disimpan/dibagikan — nunggu user konfirmasi di modal).
   async function bagikanGambar() {
     if (!kartuGambarRef.current || statusGambar === "proses") return;
     setStatusGambar("proses");
@@ -1509,12 +1517,28 @@ function ShareButtons({ golonganHasil, nama }) {
         pixelRatio: 2,
         cacheBust: true,
       });
-      const res = await fetch(dataUrl);
+      setPreviewGambar(dataUrl);
+      setStatusGambar("idle");
+    } catch (e) {
+      setStatusGambar("gagal");
+      setTimeout(() => setStatusGambar("idle"), 2500);
+    }
+  }
+
+  function tutupPreviewGambar() {
+    if (statusSimpan === "proses") return;
+    setPreviewGambar(null);
+    setStatusSimpan("idle");
+  }
+
+  // Dipanggil dari tombol di dalam modal preview, setelah user lihat gambarnya dulu.
+  async function konfirmasiSimpanGambar() {
+    if (!previewGambar || statusSimpan === "proses") return;
+    setStatusSimpan("proses");
+    try {
+      const res = await fetch(previewGambar);
       const blob = await res.blob();
-      const namaFile = `hasil-sensus-warganet-2026-${(nama || "warganet")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")}.png`;
-      const file = new File([blob], namaFile, { type: "image/png" });
+      const file = new File([blob], namaFileGambar, { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
@@ -1524,16 +1548,17 @@ function ShareButtons({ golonganHasil, nama }) {
         });
       } else {
         const a = document.createElement("a");
-        a.href = dataUrl;
-        a.download = namaFile;
+        a.href = previewGambar;
+        a.download = namaFileGambar;
         document.body.appendChild(a);
         a.click();
         a.remove();
       }
-      setStatusGambar("idle");
+      setStatusSimpan("idle");
+      setPreviewGambar(null);
     } catch (e) {
-      setStatusGambar("gagal");
-      setTimeout(() => setStatusGambar("idle"), 2500);
+      setStatusSimpan("gagal");
+      setTimeout(() => setStatusSimpan("idle"), 2500);
     }
   }
 
@@ -1543,6 +1568,106 @@ function ShareButtons({ golonganHasil, nama }) {
       <div style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }} aria-hidden="true">
         <ShareImageCard ref={kartuGambarRef} nama={nama} golonganHasil={golonganHasil} />
       </div>
+
+      {previewGambar && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(10,8,30,0.82)",
+            backdropFilter: "blur(3px)",
+            zIndex: 999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px 20px",
+            boxSizing: "border-box",
+          }}
+          onClick={tutupPreviewGambar}
+        >
+          <div
+            style={{
+              fontSize: 13,
+              color: "rgba(255,255,255,0.75)",
+              fontWeight: 700,
+              marginBottom: 12,
+              letterSpacing: "0.03em",
+            }}
+          >
+            Preview dulu, sip? 👀
+          </div>
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: 340,
+              maxHeight: "62vh",
+              overflowY: "auto",
+              borderRadius: 22,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            }}
+          >
+            <img
+              src={previewGambar}
+              alt="Preview hasil sensus"
+              style={{ width: "100%", display: "block", borderRadius: 22 }}
+            />
+          </div>
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 340, marginTop: 18 }}
+          >
+            <button
+              onClick={konfirmasiSimpanGambar}
+              disabled={statusSimpan === "proses"}
+              style={{
+                width: "100%",
+                padding: "15px 0",
+                background: "linear-gradient(135deg, #F59E0B, #FCD34D)",
+                color: "#78350F",
+                border: "none",
+                borderRadius: 18,
+                fontSize: 15,
+                fontWeight: 800,
+                cursor: statusSimpan === "proses" ? "wait" : "pointer",
+                fontFamily: FONT_DISPLAY,
+                marginBottom: 10,
+                boxShadow: "0 6px 16px rgba(245,158,11,0.35)",
+                opacity: statusSimpan === "proses" ? 0.75 : 1,
+              }}
+            >
+              {statusSimpan === "proses"
+                ? "⏳ Lagi disimpan..."
+                : statusSimpan === "gagal"
+                ? "Gagal, coba lagi 🙏"
+                : "💾 Simpan gambar ini"}
+            </button>
+            <button
+              onClick={tutupPreviewGambar}
+              disabled={statusSimpan === "proses"}
+              style={{
+                width: "100%",
+                background: "rgba(255,255,255,0.12)",
+                border: "1.5px dashed rgba(255,255,255,0.5)",
+                borderRadius: 12,
+                color: WARNA.putih,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: statusSimpan === "proses" ? "wait" : "pointer",
+                fontFamily: FONT_BODY,
+                padding: "10px 0",
+              }}
+            >
+              ✕ Batal, tutup preview
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         style={{
