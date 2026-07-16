@@ -53,24 +53,7 @@ export default function App() {
 
   useEffect(() => {
     muatData();
-    try {
-      const sudahIsi = localStorage.getItem("sensus_warganet_2026_sudah_isi");
-      if (sudahIsi) {
-        setSudahPernahIsi(true);
-        const golonganTersimpan = localStorage.getItem("sensus_warganet_2026_golongan");
-        const nomorTersimpan = localStorage.getItem("sensus_warganet_2026_nomor");
-        const namaTersimpanLS = localStorage.getItem("sensus_warganet_2026_nama");
-        if (golonganTersimpan) {
-          setGolonganHasil(JSON.parse(golonganTersimpan));
-          setNomorResponden(nomorTersimpan ? parseInt(nomorTersimpan, 10) : null);
-        }
-        if (namaTersimpanLS) {
-          setNamaTersimpan(namaTersimpanLS);
-        }
-      }
-    } catch (e) {
-      // localStorage tidak tersedia, lanjutkan tanpa pengecekan
-    }
+    // Pengecekan "sudah pernah isi" via localStorage dihapus agar submit tidak dibatasi.
   }, []);
 
   async function muatData() {
@@ -180,15 +163,7 @@ export default function App() {
     setGolonganHasil(golonganUntukDisimpan);
     setNamaTersimpan(namaFinal);
     setStep("submitted");
-
-    try {
-      localStorage.setItem("sensus_warganet_2026_sudah_isi", "true");
-      localStorage.setItem("sensus_warganet_2026_golongan", JSON.stringify(golonganUntukDisimpan));
-      localStorage.setItem("sensus_warganet_2026_nomor", String(totalResponden + 1));
-      localStorage.setItem("sensus_warganet_2026_nama", namaFinal);
-    } catch (e) {
-      // localStorage tidak tersedia, lewati saja
-    }
+    // Penyimpanan flag "sudah isi" ke localStorage dihapus agar user bisa submit berkali-kali.
   }
 
   return (
