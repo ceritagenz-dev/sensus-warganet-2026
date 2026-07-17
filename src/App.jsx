@@ -1450,7 +1450,7 @@ const ShareImageCard = forwardRef(function ShareImageCard({ nama, golonganHasil 
           Kamu golongan apa? Cek di:
         </div>
         <div style={{ fontSize: 18, color: WARNA.putih, fontWeight: 800, fontFamily: FONT_DISPLAY }}>
-          sensuswarganet2026.vercel.app
+          ceritagenz.vercel.app
         </div>
         <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", fontWeight: 600, marginTop: 9 }}>
           @ceritagenz • #SensusWarganet2026
